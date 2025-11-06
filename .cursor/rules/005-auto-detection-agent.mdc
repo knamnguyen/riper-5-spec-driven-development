@@ -1,0 +1,292 @@
+---
+description: Auto-detects feature requests, questions, and conversation intent to automatically trigger appropriate RIPER-5 modes and workflows. Essential for making spec-driven development seamless - users just describe what they want without needing to know commands. Applies when conversation starts or when user describes a task/feature/bug.
+globs:
+alwaysApply: true
+---
+
+# Auto-Detection and Smart Mode Transitions
+
+## Critical Auto-Detection Rules
+
+### 1. Conversation Start Behavior
+
+**On every NEW conversation (no prior context):**
+
+1. **Check for context file existence**:
+   - If `.cursor/context/all-context.md` is MISSING or EMPTY:
+     - Auto-suggest: "I notice this project doesn't have a context file yet. Should I run `@generate-context.md` to scan your codebase? (Recommended for existing projects)"
+     - Wait for user confirmation before scanning
+   
+2. **Auto-enter RESEARCH mode** by default:
+   - Declare: `[MODE: RESEARCH]`
+   - Begin understanding the request
+   - Do NOT start coding or planning yet
+
+### 2. Feature Request Auto-Detection
+
+**Detect feature requests when user says:**
+
+- "I want to build/create/add/implement..."
+- "Can you build/create/add/implement..."
+- "Let's build/create/add/implement..."
+- "Build/Create/Add/Implement [something]"
+- "New feature: [description]"
+- "I need [feature description]"
+
+**Auto-trigger plan generation when:**
+
+- Request is NON-TRIVIAL (more than simple config/text changes)
+- After completing RESEARCH mode
+- Before entering INNOVATE mode
+
+**Auto-response pattern:**
+```
+[MODE: RESEARCH]
+
+I'll help you build [feature]. Let me understand your codebase first.
+
+[Perform research on relevant files/context]
+
+Based on my research, this looks like a [SIMPLE/COMPLEX] feature.
+
+I'll generate a plan now: @generate-plan.md
+
+[Auto-invoke generate-plan command]
+```
+
+### 3. Question vs Implementation Detection
+
+**Questions** (DO NOT auto-generate plans):
+- "How does [X] work?"
+- "Why is [Y] happening?"
+- "What is [Z]?"
+- "Explain [concept]"
+- "Can you show me [example]"
+
+**Auto-response**: Stay in RESEARCH mode, answer question, do NOT trigger plan generation.
+
+**Implementation Requests** (DO auto-generate plans):
+- Contains action verbs: build, create, add, implement, fix, refactor, migrate
+- Describes desired outcome or feature
+- Mentions files/components to modify
+
+**Auto-response**: Enter RESEARCH → Auto-trigger plan generation → INNOVATE → PLAN → await approval for EXECUTE
+
+### 4. Trivial vs Non-Trivial Classification
+
+**TRIVIAL (Skip plan generation, offer direct fix):**
+- Single line changes (typos, config values)
+- Comment additions
+- Formatting fixes
+- Simple text/message updates
+- Adding console.log or debug statements
+
+**Auto-response**:
+```
+[MODE: RESEARCH]
+
+This is a simple fix. I can do this directly without a plan.
+
+[Show the change]
+
+Should I apply this? (yes/no)
+```
+
+**NON-TRIVIAL (Auto-generate plan):**
+- New features (any size)
+- Multi-file changes
+- Logic modifications
+- API/database changes
+- Architecture decisions
+
+**Auto-response**: Full RIPER-5 workflow with plan generation.
+
+### 5. Context File Auto-Generation
+
+**When to auto-suggest context generation:**
+
+- First conversation in a project
+- `.cursor/context/all-context.md` doesn't exist
+- User mentions "existing project" or "my codebase"
+
+**Auto-suggestion format:**
+```
+[MODE: RESEARCH]
+
+I notice you're working with an existing project but there's no context file yet.
+
+Should I scan your codebase to understand your:
+- Tech stack
+- Architecture
+- Conventions
+- Environment setup
+
+Run: @generate-context.md? (yes/no)
+```
+
+**Do NOT auto-run** - always ask first (scanning can be time-consuming).
+
+### 6. Plan File Auto-Detection
+
+**When plan file exists** (`.cursor/plans/[feature]_PLAN_*.md` attached or mentioned):
+
+1. **Auto-read "What's Functional Now" section**
+2. **Auto-detect current phase** (✅/🚧/⏳)
+3. **Auto-resume from last incomplete phase**
+
+**Auto-response**:
+```
+[MODE: RESEARCH]
+
+I see you're continuing work on [feature] (Plan dated [date]).
+
+Current status:
+- ✅ Phase 1: Complete
+- 🚧 Phase 2: In progress
+- ⏳ Phase 3: Planned
+
+Should I continue with Phase 2? (yes/no)
+```
+
+### 7. Explicit Command Override
+
+**If user uses explicit commands, DO NOT auto-trigger:**
+
+- `@generate-plan.md` - User is manually creating plan
+- `@generate-context.md` - User is manually creating context
+- `ENTER [MODE] MODE` - User is manually controlling modes
+
+**Honor explicit commands** - do not second-guess or auto-trigger additional workflows.
+
+## Auto-Transition Logic
+
+### Smooth Mode Transitions
+
+**RESEARCH → INNOVATE**:
+- Auto-transition when research is complete
+- Ask: "I've completed research. Should I explore implementation approaches? (say 'go')"
+
+**INNOVATE → PLAN**:
+- Auto-transition when approach is decided
+- Auto-extract/update implementation checklist from plan file
+
+**PLAN → EXECUTE**:
+- **NEVER auto-transition** - always require explicit "ENTER EXECUTE MODE"
+- This is a critical safety checkpoint
+
+**EXECUTE → REVIEW**:
+- Auto-transition after implementation complete
+- Auto-perform self-review
+- Auto-flag deviations
+
+**REVIEW → UPDATE PROCESS**:
+- Auto-suggest if deviations found
+- Ask: "I found deviations from the plan. Should I ENTER UPDATE PROCESS MODE to reconcile? (yes/no)"
+
+## Examples
+
+### Example 1: Feature Request with Auto-Detection
+
+**User**: "I want to add a dark mode toggle to my app"
+
+**AI Response**:
+```
+[MODE: RESEARCH]
+
+I'll help you add a dark mode toggle. Let me understand your current setup first.
+
+[Reads relevant files: theme config, layout, components]
+
+Based on my research:
+- You're using Tailwind CSS v4
+- No existing theme system detected
+- This is a SIMPLE feature (one-session)
+
+Generating plan now...
+
+@generate-plan.md
+[Auto-invokes command, creates dark-mode-toggle_PLAN_06-11-25.md]
+
+Plan created! Moving to INNOVATE mode to explore approaches.
+
+[MODE: INNOVATE]
+[Discusses implementation options]
+```
+
+### Example 2: Question (No Auto-Trigger)
+
+**User**: "How does authentication work in my app?"
+
+**AI Response**:
+```
+[MODE: RESEARCH]
+
+Let me examine your authentication setup.
+
+[Reads auth files, middleware, config]
+
+Your app uses Clerk for authentication:
+- Protected routes via middleware
+- User session management in tRPC context
+- Role-based access control
+
+[Explains architecture]
+
+Is there anything specific about authentication you'd like to change or improve?
+```
+
+### Example 3: Trivial Fix (Direct Offer)
+
+**User**: "Fix the typo in the landing page header"
+
+**AI Response**:
+```
+[MODE: RESEARCH]
+
+Found the typo in `app/landing/page.tsx` line 42:
+- "Welcom" → "Welcome"
+
+This is a simple fix. I can apply it directly without a plan.
+
+Should I fix it? (yes/no)
+```
+
+### Example 4: Context File Missing
+
+**User**: "Add a user profile page to my Next.js app"
+
+**AI Response**:
+```
+[MODE: RESEARCH]
+
+I notice this project doesn't have a context file yet.
+
+Should I run `@generate-context.md` first to understand your:
+- Tech stack and versions
+- Project structure
+- Existing conventions
+- API patterns
+
+This will help me create a better plan for your user profile page. (yes/no)
+```
+
+## Enforcement Rules
+
+- ✅ Auto-detect intent EVERY conversation
+- ✅ Auto-enter RESEARCH mode by default
+- ✅ Auto-trigger plan generation for non-trivial features
+- ✅ Auto-suggest context generation if missing
+- ✅ Auto-resume from plan files when provided
+- ❌ NEVER auto-execute code without explicit approval
+- ❌ NEVER skip RESEARCH mode (even for simple requests)
+- ❌ NEVER auto-transition to EXECUTE mode
+
+## Backward Compatibility
+
+**All existing commands still work:**
+- `@generate-plan.md` - Manual plan generation
+- `@generate-context.md` - Manual context generation
+- `ENTER [MODE] MODE` - Manual mode transitions
+- `go` - Sequential mode advancement
+
+**Auto-detection enhances, does not replace** explicit commands.

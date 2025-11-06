@@ -5,10 +5,11 @@
 ## What is This?
 
 A complete development system for Cursor IDE that combines:
-- 📋 **Spec-Driven Development**: Create comprehensive plans before coding
+- 🤖 **Auto-Detection**: Just describe what you want - AI handles the rest
+- 📋 **Spec-Driven Development**: Plans auto-generate for features, auto-update during implementation
 - 🔄 **RIPER-5 Protocol**: 5-phase execution framework (Research → Innovate → Plan → Execute → Review)
-- 🧠 **Auto-Learning**: System improves after every session
-- 📚 **Persistent Memory**: Context survives across conversations
+- 🧠 **Auto-Learning**: Context and plans auto-update with every session
+- 📚 **Persistent Memory**: Everything survives across conversations
 
 ## Quick Start
 
@@ -26,29 +27,55 @@ cp -r riper-5-spec-driven-development/.cursor /path/to/your-project/
 
 ### Your First Feature
 
-1. In Cursor chat, type: `@generate-plan.md`
+**Just describe what you want - that's it!**
+
+```
+You: "I want to add a dark mode toggle to my app"
+
+AI: [MODE: RESEARCH]
+     Let me understand your setup first...
+     [Analyzes codebase]
+     This is a SIMPLE feature. Generating plan...
+     @generate-plan.md
+     [Auto-creates plan, moves through phases]
+     Ready to implement. Say "ENTER EXECUTE MODE"
+```
+
+**No commands to remember. No setup. Just talk naturally.**
+
+---
+
+**Alternative: Use explicit commands if you prefer**
+1. Type: `@generate-plan.md`
 2. Describe your feature
 3. Choose: SIMPLE or COMPLEX
 4. Follow the RIPER-5 workflow
-5. Watch AI systematically build it
 
 ### Setting Up for Existing Projects
 
-**If you have an existing codebase**, generate the context file to teach the AI about your project:
+**AI automatically detects and offers to scan your codebase:**
 
-```bash
-# After copying .cursor folder to your project
-# In Cursor chat, type:
-@generate-context.md
-
-# Choose: Full Scan (first time) or Delta Update (subsequent)
-# AI creates .cursor/context/all-context.md with:
-# - Repository structure
-# - Tech stack
-# - Environment variables
-# - API surface
-# - Conventions
 ```
+You: "Add a user profile page to my app"
+
+AI: [MODE: RESEARCH]
+     I notice this project doesn't have a context file yet.
+     
+     Should I run @generate-context.md to understand your:
+     - Tech stack and versions
+     - Project structure
+     - Conventions
+     - API patterns
+     
+     This will help me create a better plan. (yes/no)
+
+You: "yes"
+
+AI: [Scans codebase, creates .cursor/context/all-context.md]
+     Context generated! Now analyzing for your user profile page...
+```
+
+**Manual alternative:** Just type `@generate-context.md` anytime
 
 This context file is automatically referenced during RESEARCH mode to validate implementations against your existing architecture.
 
@@ -149,53 +176,83 @@ Plan updated: ✅✅✅ All Phases Complete
 - ❌ Hours wasted on wrong approaches
 - ❌ Lost context between sessions
 - ❌ Inconsistent code quality
+- ❌ Need to learn complex commands and workflows
 
 ### After RIPER-5
+- ✅ **Just describe what you want - AI auto-detects and handles workflow**
 - ✅ AI can't code without explicit approval
-- ✅ Wrong approaches caught in 30-min planning phase
-- ✅ Full context persists across sessions
+- ✅ Wrong approaches caught in 30-min planning phase (auto-generated)
+- ✅ Context auto-updates every session
+- ✅ Plans auto-generate and auto-update
 - ✅ Self-reviewing AI catches mistakes
 - ✅ **~90% reduction in wasted implementation time**
 
 ## How It Works
 
+**Fully Automatic Workflow:**
+
 ```
-User describes feature
+You: "I want to add user authentication"
     ↓
-@generate-plan → [feature]_PLAN_06-11-25.md created
+AI auto-detects: Feature request (non-trivial)
     ↓
-RESEARCH → AI understands codebase
+AI auto-enters: [MODE: RESEARCH]
     ↓
-INNOVATE → Explore approaches
+AI checks: Is .cursor/context/all-context.md present?
+    ├─ No  → Auto-suggests: "Run @generate-context.md?"
+    └─ Yes → Uses context to understand codebase
     ↓
-PLAN → Finalize implementation checklist
+AI completes research, auto-triggers plan generation
     ↓
-[User approves: "ENTER EXECUTE MODE"]
+AI auto-invokes: @generate-plan.md
     ↓
-EXECUTE → AI implements exactly as planned
+AI creates: user-authentication_PLAN_06-11-25.md
     ↓
-REVIEW → Self-check against plan
+[MODE: INNOVATE] → Explores approaches
     ↓
-Auto-update rules, context, and memories
+[MODE: PLAN] → Finalizes implementation checklist
+    ↓
+AI waits for approval: "Ready to implement. Say 'ENTER EXECUTE MODE'"
+    ↓
+You: "ENTER EXECUTE MODE"
+    ↓
+[MODE: EXECUTE] → Implements exactly as planned
+    ↓
+[MODE: REVIEW] → Self-checks against plan
+    ↓
+Auto-updates: plan progress, context, memories
 ```
+
+**You only said one sentence. AI handled everything else automatically.**
 
 ## Features
 
+### 🤖 Auto-Detection (NEW!)
+- **Auto-detects feature requests** - No need to invoke commands manually
+- **Auto-suggests context generation** - Asks to scan codebase if needed
+- **Auto-triggers plan generation** - Creates plans for non-trivial features
+- **Auto-resumes work** - Picks up where you left off from plan files
+- **Smart classification** - Distinguishes questions vs features vs trivial fixes
+- **Manual override available** - Explicit commands still work for full control
+
 ### 🎯 Spec-Driven Development
-- Generate SIMPLE (one-session) or COMPLEX (multi-phase) plans
+- **Auto-generates** SIMPLE (one-session) or COMPLEX (multi-phase) plans
+- **Auto-updates** plans during implementation
 - Date-stamped plans: `.cursor/plans/[feature]_PLAN_06-11-25.md`
 - Reattach plans across sessions for continuity
 - Import checklists directly into Cursor Plan mode
 
 ### 🔄 RIPER-5 Execution
+- **Auto-starts** in RESEARCH mode (no manual trigger needed)
 - **RESEARCH**: Understand before acting
 - **INNOVATE**: Explore options systematically  
 - **PLAN**: Finalize before implementing
-- **EXECUTE**: Code only with approval
-- **REVIEW**: Self-verify against plan
+- **EXECUTE**: Code only with explicit approval
+- **REVIEW**: Auto-verifies against plan
 
 ### 🧠 Auto-Learning
-- System updates rules after every session
+- **Auto-updates** context after every session
+- **Auto-updates** plans during implementation
 - Captures user preferences in memories
 - Plan files track "What's Functional Now"
 - Context repository stays current
@@ -203,8 +260,8 @@ Auto-update rules, context, and memories
 ### 🛡️ Safety Features
 - **Phase Locking**: AI can't code in RESEARCH/INNOVATE/PLAN modes
 - **50% Check-in**: Mid-implementation validation
-- **Self-Review**: AI flags its own deviations
-- **Explicit Transitions**: User controls mode changes
+- **Self-Review**: AI auto-flags its own deviations
+- **Explicit Approval Required**: EXECUTE mode requires "ENTER EXECUTE MODE" command
 
 ## Documentation
 

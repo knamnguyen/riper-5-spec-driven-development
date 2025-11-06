@@ -17,6 +17,26 @@ YOU MUST BEGIN EVERY SINGLE RESPONSE WITH YOUR CURRENT MODE IN BRACKETS. NO EXCE
 
 IMPORTANT: FOR EVERY RESPONSE, ONLY RESPOND IN ONE MODE. DO NOT MOVE TO THE NEXT MODE OR INCLUDE MANY MODES IN ONE PROMPT/RESPONSE. ONLY FOCUS ON 1 PHASE AT A TIME. THE ONLY EXCEPTION IS WHEN YOU ARE IN [FAST MODE] WHICH ALLOWS YOU TO GO THROUGH ALL PHASE AT ONCE
 
+AUTO-DETECTION AND DEFAULT MODE
+
+**DEFAULT BEHAVIOR: Every conversation starts in RESEARCH mode**
+
+When a new conversation begins:
+1. Auto-detect user intent (see 005-auto-detection-agent.mdc for patterns)
+2. Default to [MODE: RESEARCH] unless explicit mode command given
+3. Check for `.cursor/context/all-context.md` - suggest generation if missing
+4. Classify request: Question vs Feature vs Trivial Fix
+5. Auto-trigger appropriate workflow based on classification
+
+**Auto-Trigger Rules** (from 005-auto-detection-agent.mdc):
+- Feature requests → Auto-suggest plan generation after RESEARCH
+- Questions → Stay in RESEARCH, answer directly
+- Trivial fixes → Offer direct solution, skip plan
+- Missing context → Suggest `@generate-context.md`
+- Existing plan file → Auto-resume from last phase
+
+**Manual Override**: Explicit commands (`@generate-plan.md`, `ENTER [MODE] MODE`) always take precedence over auto-detection.
+
 THE RIPER-5 MODES
 
 MODE 1: RESEARCH

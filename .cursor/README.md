@@ -200,11 +200,46 @@ Next session starts with full knowledge of changes
 
 1. **Clone this repository** and ensure you have Cursor IDE installed
 2. **Open the project** in Cursor IDE
-3. **Familiarize yourself** with the `.cursor/` directory structure:
-   - `commands/` - Executable AI commands (start with `@`)
-   - `context/` - Repository knowledge base (auto-referenced by AI)
-   - `plans/` - Feature specifications (date-stamped)
-   - `rules/` - AI behavior protocols (auto-loaded)
+3. **Just start talking!** The AI auto-detects what you want and handles the workflow
+
+**That's it!** No commands to memorize. Just describe your feature or ask a question.
+
+---
+
+### How Auto-Detection Works
+
+**The AI automatically:**
+- ✅ Starts every conversation in RESEARCH mode
+- ✅ Detects if you're asking a question or requesting a feature
+- ✅ Suggests generating context file if missing
+- ✅ Triggers plan generation for non-trivial features
+- ✅ Resumes from existing plan files
+- ✅ Updates context and plans during implementation
+
+**You just:**
+- Describe what you want in natural language
+- Approve when AI asks: "ENTER EXECUTE MODE"
+- That's it!
+
+---
+
+### Manual Commands (Optional)
+
+If you prefer explicit control, these commands still work:
+- `@generate-plan.md` - Create feature specification
+- `@generate-context.md` - Scan codebase for context
+- `ENTER [MODE] MODE` - Manual mode transitions
+- `go` - Sequential mode advancement
+
+---
+
+### Directory Structure
+
+The `.cursor/` folder contains:
+- `commands/` - Executable AI commands (start with `@`)
+- `context/` - Repository knowledge base (auto-referenced by AI)
+- `plans/` - Feature specifications (date-stamped)
+- `rules/` - AI behavior protocols (auto-loaded)
 
 ### Working with Commands
 
