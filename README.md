@@ -32,6 +32,98 @@ cp -r riper-5-spec-driven-development/.cursor /path/to/your-project/
 4. Follow the RIPER-5 workflow
 5. Watch AI systematically build it
 
+### Setting Up for Existing Projects
+
+**If you have an existing codebase**, generate the context file to teach the AI about your project:
+
+```bash
+# After copying .cursor folder to your project
+# In Cursor chat, type:
+@generate-context.md
+
+# Choose: Full Scan (first time) or Delta Update (subsequent)
+# AI creates .cursor/context/all-context.md with:
+# - Repository structure
+# - Tech stack
+# - Environment variables
+# - API surface
+# - Conventions
+```
+
+This context file is automatically referenced during RESEARCH mode to validate implementations against your existing architecture.
+
+---
+
+## Plan Types: SIMPLE vs COMPLEX
+
+### SIMPLE Plans (One-Session Features)
+
+**Use for**: Single component, endpoint, or UI element that ships in one session
+
+**Characteristics**:
+- 8-15 atomic steps
+- Completable in 1-2 hours
+- Single RIPER-5 cycle
+- No phased delivery
+
+**Example**: Add a "Delete Account" button
+```
+@generate-plan.md → SIMPLE
+RESEARCH (10 min) → INNOVATE (5 min) → PLAN (15 min) →
+EXECUTE (45 min) → REVIEW (10 min) → ✅ Done in one session
+```
+
+---
+
+### COMPLEX Plans (Multi-Phase Projects)
+
+**Use for**: Features spanning multiple subsystems, requiring phased delivery
+
+**Characteristics**:
+- Multiple RFCs (Request for Comments)
+- Phase tracking (✅ Complete, 🚧 In Progress, ⏳ Planned)
+- "What's Functional Now" summaries after each phase
+- Designed for **multiple Cursor sessions**
+
+**Example**: Multi-Platform Social Referral System
+
+```
+@generate-plan.md → COMPLEX
+Plan created: social-referral_PLAN_06-11-25.md
+
+┌─────────────────────────────────────────────┐
+│ SESSION 1: Phase 1 (X/Twitter Support)     │
+└─────────────────────────────────────────────┘
+Attach: social-referral_PLAN_06-11-25.md
+RESEARCH → INNOVATE → PLAN → EXECUTE Phase 1
+Plan updated: ✅ Phase 1 Complete
+
+┌─────────────────────────────────────────────┐
+│ SESSION 2: Phase 2 (Threads Support)       │
+└─────────────────────────────────────────────┘
+Attach: social-referral_PLAN_06-11-25.md (same file)
+AI reads "What's Functional Now: X support working"
+RESEARCH → PLAN → EXECUTE Phase 2
+Plan updated: ✅ Phase 1 | ✅ Phase 2 Complete
+
+┌─────────────────────────────────────────────┐
+│ SESSION 3: Phase 3 (Facebook Support)      │
+└─────────────────────────────────────────────┘
+Attach: social-referral_PLAN_06-11-25.md
+AI reads "What's Functional Now: X & Threads working"
+RESEARCH → PLAN → EXECUTE Phase 3
+Plan updated: ✅✅✅ All Phases Complete
+```
+
+**Key Benefits**:
+- ✅ Date-stamped plan survives across sessions
+- ✅ "What's Functional Now" tracks incremental progress
+- ✅ Each phase independently deployable and testable
+- ✅ Can pause/resume work across days or weeks
+- ✅ Multiple team members can work on different phases
+
+---
+
 ## What's Included
 
 ```
