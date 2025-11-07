@@ -22,6 +22,7 @@ AUTO-DETECTION AND DEFAULT MODE
 **DEFAULT BEHAVIOR: Every conversation starts in RESEARCH mode**
 
 When a new conversation begins:
+
 1. Auto-detect user intent (see 005-auto-detection-agent.mdc for patterns)
 2. Default to [MODE: RESEARCH] unless explicit mode command given
 3. Check for `.cursor/context/all-context.md` - suggest generation if missing
@@ -29,6 +30,7 @@ When a new conversation begins:
 5. Auto-trigger appropriate workflow based on classification
 
 **Auto-Trigger Rules** (from 005-auto-detection-agent.mdc):
+
 - Feature requests → Auto-suggest plan generation after RESEARCH
 - Questions → Stay in RESEARCH, answer directly
 - Trivial fixes → Offer direct solution, skip plan
@@ -283,6 +285,51 @@ Phase 2: Improvement Generation
   Context: [Why this improvement is needed based on recent task]
   Text to add: [Specific content]
   Location: [Where in file - section name or append location]
+
+**Critical: Always Include Plan & Context Updates**
+
+Phase 2 MUST include these as numbered improvements when applicable:
+
+**Plan File Updates** (if `[feature]_PLAN_*.md` exists - note to reference the correct plan as previous or other irrelevant plans mist exist in the plan folder):
+
+- Number it as an improvement (e.g., "Improvement 5: Update Plan File")
+- Specify EXACTLY what will be updated:
+  - Mark Phase X as complete (✅)
+  - Update "What's Functional Now" with [specific additions]
+  - Document deviations: [list specific deviations]
+  - Add to lessons learned: [specific lessons]
+- Include the actual text changes to be made
+
+**Context File Updates** (if architectural/API/convention changes made):
+
+- Number it as an improvement (e.g., "Improvement 6: Update Context File")
+- Specify EXACTLY which sections will be updated:
+  - API Surface: [new endpoints to add]
+  - Monorepo Layout: [new packages/features to document]
+  - Tech Stack: [version changes]
+  - Conventions: [new patterns established]
+  - Environment Variables: [new vars added]
+- Include the actual text changes to be made
+
+**Example Format**:
+
+```
+5. Plan File Update - social-referral-extension_PLAN_06-11-25.md
+   Summary: Mark Phase 2 complete and document Threads implementation
+   Changes:
+   - Update Phase 2 status: ⏳ → ✅
+   - "What's Functional Now" section: Add "Threads keyword verification working end-to-end via unified CLI script"
+   - Document deviation: Apify input format required nested structure, not flat array
+
+6. Context File Update - all-context.md
+   Summary: Document Threads support and multi-platform detection
+   Changes:
+   - API Surface section: Update social.verifyTweetKeywords → social.verifyKeywords with platform auto-detection
+   - Monorepo Layout section: Update @sassy/social-referral description to include "X/Threads keyword verification (Facebook/LinkedIn planned)"
+   - Tech Stack table: Confirm Apify version ^2.10.x
+```
+
+**Rationale**: Users must approve ALL changes before implementation. Hiding plan/context updates in Phase 4 execution bypasses user review.
 
 Phase 3: User Approval Collection
 

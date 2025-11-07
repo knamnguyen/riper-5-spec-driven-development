@@ -16,7 +16,6 @@ alwaysApply: true
    - If `.cursor/context/all-context.md` is MISSING or EMPTY:
      - Auto-suggest: "I notice this project doesn't have a context file yet. Should I run `@generate-context.md` to scan your codebase? (Recommended for existing projects)"
      - Wait for user confirmation before scanning
-   
 2. **Auto-enter RESEARCH mode** by default:
    - Declare: `[MODE: RESEARCH]`
    - Begin understanding the request
@@ -40,6 +39,7 @@ alwaysApply: true
 - Before entering INNOVATE mode
 
 **Auto-response pattern:**
+
 ```
 [MODE: RESEARCH]
 
@@ -57,6 +57,7 @@ I'll generate a plan now: @generate-plan.md
 ### 3. Question vs Implementation Detection
 
 **Questions** (DO NOT auto-generate plans):
+
 - "How does [X] work?"
 - "Why is [Y] happening?"
 - "What is [Z]?"
@@ -66,6 +67,7 @@ I'll generate a plan now: @generate-plan.md
 **Auto-response**: Stay in RESEARCH mode, answer question, do NOT trigger plan generation.
 
 **Implementation Requests** (DO auto-generate plans):
+
 - Contains action verbs: build, create, add, implement, fix, refactor, migrate
 - Describes desired outcome or feature
 - Mentions files/components to modify
@@ -75,6 +77,7 @@ I'll generate a plan now: @generate-plan.md
 ### 4. Trivial vs Non-Trivial Classification
 
 **TRIVIAL (Skip plan generation, offer direct fix):**
+
 - Single line changes (typos, config values)
 - Comment additions
 - Formatting fixes
@@ -82,6 +85,7 @@ I'll generate a plan now: @generate-plan.md
 - Adding console.log or debug statements
 
 **Auto-response**:
+
 ```
 [MODE: RESEARCH]
 
@@ -93,6 +97,7 @@ Should I apply this? (yes/no)
 ```
 
 **NON-TRIVIAL (Auto-generate plan):**
+
 - New features (any size)
 - Multi-file changes
 - Logic modifications
@@ -110,6 +115,7 @@ Should I apply this? (yes/no)
 - User mentions "existing project" or "my codebase"
 
 **Auto-suggestion format:**
+
 ```
 [MODE: RESEARCH]
 
@@ -135,6 +141,7 @@ Run: @generate-context.md? (yes/no)
 3. **Auto-resume from last incomplete phase**
 
 **Auto-response**:
+
 ```
 [MODE: RESEARCH]
 
@@ -163,23 +170,28 @@ Should I continue with Phase 2? (yes/no)
 ### Smooth Mode Transitions
 
 **RESEARCH → INNOVATE**:
+
 - Auto-transition when research is complete
 - Ask: "I've completed research. Should I explore implementation approaches? (say 'go')"
 
 **INNOVATE → PLAN**:
+
 - Auto-transition when approach is decided
 - Auto-extract/update implementation checklist from plan file
 
 **PLAN → EXECUTE**:
+
 - **NEVER auto-transition** - always require explicit "ENTER EXECUTE MODE"
 - This is a critical safety checkpoint
 
 **EXECUTE → REVIEW**:
+
 - Auto-transition after implementation complete
 - Auto-perform self-review
 - Auto-flag deviations
 
 **REVIEW → UPDATE PROCESS**:
+
 - Auto-suggest if deviations found
 - Ask: "I found deviations from the plan. Should I ENTER UPDATE PROCESS MODE to reconcile? (yes/no)"
 
@@ -190,6 +202,7 @@ Should I continue with Phase 2? (yes/no)
 **User**: "I want to add a dark mode toggle to my app"
 
 **AI Response**:
+
 ```
 [MODE: RESEARCH]
 
@@ -218,6 +231,7 @@ Plan created! Moving to INNOVATE mode to explore approaches.
 **User**: "How does authentication work in my app?"
 
 **AI Response**:
+
 ```
 [MODE: RESEARCH]
 
@@ -240,6 +254,7 @@ Is there anything specific about authentication you'd like to change or improve?
 **User**: "Fix the typo in the landing page header"
 
 **AI Response**:
+
 ```
 [MODE: RESEARCH]
 
@@ -256,6 +271,7 @@ Should I fix it? (yes/no)
 **User**: "Add a user profile page to my Next.js app"
 
 **AI Response**:
+
 ```
 [MODE: RESEARCH]
 
@@ -284,9 +300,14 @@ This will help me create a better plan for your user profile page. (yes/no)
 ## Backward Compatibility
 
 **All existing commands still work:**
+
 - `@generate-plan.md` - Manual plan generation
 - `@generate-context.md` - Manual context generation
 - `ENTER [MODE] MODE` - Manual mode transitions
 - `go` - Sequential mode advancement
 
 **Auto-detection enhances, does not replace** explicit commands.
+
+### 8. Sync Command Exemption
+
+When the user invokes `@sync-to-riper5.md`, bypass any requirement to enter `riper-5-mode` before running the sync workflow and just run the command directly to sync. Stay in the current mode unless the user issues a different explicit mode command, then execute the sync steps directly (detect project, confirm scope, verify target repo, show pending changes, sync with confirmations, commit, ask about push). This keeps the sync operation fast and avoids redundant mode transitions.

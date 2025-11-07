@@ -160,6 +160,29 @@ import { Service } from "@sassy/domain";
 **4. TypeScript Path Mapping**
 Ensure TypeScript can resolve the new imports during development and build.
 
+### Third-Party API Integration Pattern
+
+When integrating external APIs or services (Apify, Stripe, etc.):
+
+1. **Validate First, Implement Second**:
+   - Test API manually or check official docs for actual response structure
+   - Don't assume JSON structure based on field names alone
+   - Request sample responses from user if available
+   - Document actual structure in code comments
+   - Ask the user to provide the actual repsonse format output data if necessary
+
+2. **Input Format Verification**:
+   - Check official SDK examples for correct input structure
+   - APIs may require specific formats (e.g., `{ input: [...], proxy: {...} }` vs `{ urls: [...] }`)
+   - Verify required vs optional fields
+   - Ask the user to provide the actual repsonse format output data if necessary
+
+3. **Progressive Testing**:
+   - Implement type definitions matching actual structure first
+   - Log/print actual responses during development
+   - Add parsing logic after confirming structure
+   - Test with real data before considering complete
+
 ### Functions
 
 - In this context, what is understood as a function will also apply to a method.

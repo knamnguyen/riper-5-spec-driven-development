@@ -1,13 +1,17 @@
 ---
-description: 
-globs: 
-alwaysApply: true
----
----
-description: Code Standards to be followed
+description:
 globs:
 alwaysApply: true
 ---
+
+---
+
+description: Code Standards to be followed
+globs:
+alwaysApply: true
+
+---
+
 # Core Coding Standards
 
 ## Tailwind CSS v4 Standards
@@ -31,11 +35,17 @@ alwaysApply: true
 - **TypeScript Usage**: All new code MUST be written in TypeScript (`.ts` or `.tsx`).
 - **Constant Definitions**: Use `UPPER_SNAKE_CASE` along with `as const` for defining read-only object literals or arrays that represent fixed collections or configurations.
 - **Function Style**: Prefer fat arrow functions (`=>`) over the `function` keyword for consistency, especially for callbacks and inline functions. Named exports or React components may use the `function` keyword where appropriate.
-- **Barrel Files**: Avoid creating new barrel files (`index.ts` files that only re-export from other modules). Aim to refactor existing ones where practical by importing directly from the source module. *Note: Existing barrel files are present in the codebase.*
+- **Schema File Naming**: Name Zod validation schema files as `schema-validators.ts` (not `schemas.ts`) for consistency across packages. Follow the established pattern in `@sassy/stripe/src/schema-validators.ts`.
+- **Barrel Files**: Avoid creating new barrel files (`index.ts` files that only re-export from other modules). Aim to refactor existing ones where practical by importing directly from the source module.
+  - **Exception**: Only create barrel files at package entry points (e.g., `packages/package-name/src/index.ts`) for external consumption
+  - **Internal modules**: Never create barrel files for internal subdirectories (`utils/`, `lib/`, `helpers/`, etc.)
+  - **Pattern**: If a sibling directory doesn't have a barrel file (e.g., `platforms/`), your new directory shouldn't either (e.g., `utils/`)
+  - **Verification**: Before creating `index.ts`, check if direct imports work: `import { fn } from "./utils/module"` is preferable to `import { fn } from "./utils"`
+  - _Note: Existing barrel files are present in the codebase._
 - **Extensibility**: Design components and systems with extensibility in mind, often using plugin architectures or similar patterns where appropriate.
 - **Factory Patterns**: Utilize factory functions or patterns when creating complex objects or when object creation logic needs to be centralized or abstracted (e.g., for dependency injection or different implementations).
 - **Error Handling**: Use specific error types. Prefer standard `Error` objects for generic issues and create custom error classes (extending `Error`) for domain-specific or operational errors. Log errors appropriately, providing sufficient context.
-- **Documentation (JSDoc)**: Add JSDoc comments to exported functions, classes, and complex types *after* the implementation is complete and verified. Include `@param`, `@returns`, and clear `@example` tags where helpful. Focus on clarity and practical usage examples.
+- **Documentation (JSDoc)**: Add JSDoc comments to exported functions, classes, and complex types _after_ the implementation is complete and verified. Include `@param`, `@returns`, and clear `@example` tags where helpful. Focus on clarity and practical usage examples.
 
 ## Examples
 
@@ -58,32 +68,32 @@ alwaysApply: true
     }
   }
 
-  // packages/data-models/src/user-profile.ts
-  export const USER_ROLES = ['admin', 'editor', 'viewer'] as const;
-  export type UserRole = typeof USER_ROLES[number];
+// packages/data-models/src/user-profile.ts
+export const USER_ROLES = ['admin', 'editor', 'viewer'] as const;
+export type UserRole = typeof USER_ROLES[number];
 
-  export const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => {
-    // implementation...
-    return null;
-  };
+export const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => {
+// implementation...
+return null;
+};
 
-  // Importing directly, avoiding barrel files
-  import { fetchUserProfile } from '@sassy/data-models/src/user-profile';
+// Importing directly, avoiding barrel files
+import { fetchUserProfile } from '@sassy/data-models/src/user-profile';
 
-  // Basic Factory Example
-  interface Plugin {
-    initialize: () => void;
-  }
-  function createAnalyticsPlugin(config: any): Plugin {
-    return {
-      initialize: () => console.log('Plugin initialized with config:', config),
-    };
-  }
-  const googleAnalyticsPlugin = createAnalyticsPlugin({ trackingId: 'UA-123' });
+// Basic Factory Example
+interface Plugin {
+initialize: () => void;
+}
+function createAnalyticsPlugin(config: any): Plugin {
+return {
+initialize: () => console.log('Plugin initialized with config:', config),
+};
+}
+const googleAnalyticsPlugin = createAnalyticsPlugin({ trackingId: 'UA-123' });
 
-  // Basic Extensibility/Plugin Usage
-  class AnalyticsSystem {
-    private plugins: Plugin[] = [];
+// Basic Extensibility/Plugin Usage
+class AnalyticsSystem {
+private plugins: Plugin[] = [];
 
     registerPlugin(plugin: Plugin) {
       this.plugins.push(plugin);
@@ -92,109 +102,113 @@ alwaysApply: true
     initialize() {
       this.plugins.forEach(p => p.initialize());
     }
-  }
 
-  const analytics = new AnalyticsSystem();
-  analytics.registerPlugin(googleAnalyticsPlugin);
-  analytics.initialize();
+}
 
-  // Custom Error Example
-  class UserNotFoundError extends Error {
-    constructor(userId: string) {
-      super(`User with ID "${userId}" not found.`);
-      this.name = 'UserNotFoundError';
-    }
-  }
+const analytics = new AnalyticsSystem();
+analytics.registerPlugin(googleAnalyticsPlugin);
+analytics.initialize();
 
-  /**
-   * Fetches user data or throws a specific error.
-   * @param userId The ID of the user to fetch.
-   * @returns The user profile.
-   * @throws {UserNotFoundError} If the user cannot be found.
-   * @example
-   * try {
-   *   const user = await getUserProfile('123');
-   *   console.log(user.name);
-   * } catch (error) {
-   *   if (error instanceof UserNotFoundError) {
-   *     console.error(error.message); 
-   *   } else {
-   *     // Handle other errors
-   *     logger.error('Failed to fetch user profile', { userId: '123', error });
-   *   }
-   * }
-   */
+// Custom Error Example
+class UserNotFoundError extends Error {
+constructor(userId: string) {
+super(`User with ID "${userId}" not found.`);
+this.name = 'UserNotFoundError';
+}
+}
+
+/\*\*
+
+- Fetches user data or throws a specific error.
+- @param userId The ID of the user to fetch.
+- @returns The user profile.
+- @throws {UserNotFoundError} If the user cannot be found.
+- @example
+- try {
+- const user = await getUserProfile('123');
+- console.log(user.name);
+- } catch (error) {
+- if (error instanceof UserNotFoundError) {
+-     console.error(error.message);
+- } else {
+-     // Handle other errors
+-     logger.error('Failed to fetch user profile', { userId: '123', error });
+- }
+- }
+  \*/
   async function getUserProfile(userId: string): Promise<UserProfile> {
-    const user = await db.users.findUnique({ where: { id: userId } });
-    if (!user) {
-      // Log the error with context before throwing
-      logger.warn('User lookup failed', { userId }); 
-      throw new UserNotFoundError(userId);
-    }
-    return user;
+  const user = await db.users.findUnique({ where: { id: userId } });
+  if (!user) {
+  // Log the error with context before throwing
+  logger.warn('User lookup failed', { userId });
+  throw new UserNotFoundError(userId);
   }
-  ```
+  return user;
+  }
+
+````
 </example>
 
 <example type="invalid">
-  ```typescript
+```typescript
 
-  // Using a different build tool
-  // "build": "tsc"
+// Using a different build tool
+// "build": "tsc"
 
-  // Incorrect package name
-  // { "name": "myPackage" }
+// Incorrect package name
+// { "name": "myPackage" }
 
-  // Incorrect file naming
-  // src/components/UserProfile.tsx
+// Incorrect file naming
+// src/components/UserProfile.tsx
 
-  // Using 'function' keyword unnecessarily
-  function getUserData(id) {
-    // ...
+// Using 'function' keyword unnecessarily
+function getUserData(id) {
+  // ...
+}
+
+// Using mutable object for constants
+export const Config = {
+  API_URL: 'http://example.com', // Can be accidentally mutated
+};
+
+// Creating a new barrel file
+// packages/new-feature/index.ts
+export * from './module-a';
+export * from './module-b';
+
+// Tightly coupled code, hard to extend
+class ReportGenerator {
+  generatePdfReport() {
+    // Specific PDF generation logic...
   }
+  // Adding CSV would require modifying this class directly
+}
 
-  // Using mutable object for constants
-  export const Config = {
-    API_URL: 'http://example.com', // Can be accidentally mutated
-  };
+// Direct instantiation where a factory might be better
+const complexObject = new ComplexObject(dep1, new AnotherDep(), config.setting);
+// vs.
+// const complexObject = complexObjectFactory.create(config);
 
-  // Creating a new barrel file
-  // packages/new-feature/index.ts
-  export * from './module-a';
-  export * from './module-b';
-
-  // Tightly coupled code, hard to extend
-  class ReportGenerator {
-    generatePdfReport() {
-      // Specific PDF generation logic...
-    }
-    // Adding CSV would require modifying this class directly
+// Vague error handling
+function doSomethingRisky() {
+  try {
+    // ... operation ...
+  } catch (e) {
+    throw new Error("Something went wrong"); // Too generic
   }
+}
 
-  // Direct instantiation where a factory might be better
-  const complexObject = new ComplexObject(dep1, new AnotherDep(), config.setting);
-  // vs.
-  // const complexObject = complexObjectFactory.create(config);
+// Adding JSDoc prematurely to unfinished code
+/**
+ * @param a - First number (TODO: implement)
+ * @returns The sum (TODO: check logic)
+ * @example
+ * add(1, 2) // Expected: 3 (TODO: write test)
+ */
+const add = (a: number, b: number) => {
+  // WIP
+  return a - b; // Incorrect logic, documented too early
+}
+````
 
-  // Vague error handling
-  function doSomethingRisky() {
-    try {
-      // ... operation ...
-    } catch (e) {
-      throw new Error("Something went wrong"); // Too generic
-    }
-  }
-
-  // Adding JSDoc prematurely to unfinished code
-  /**
-   * @param a - First number (TODO: implement)
-   * @returns The sum (TODO: check logic)
-   * @example
-   * add(1, 2) // Expected: 3 (TODO: write test)
-   */
-  const add = (a: number, b: number) => {
-    // WIP
-    return a - b; // Incorrect logic, documented too early
-  }
-  ```
 </example>
