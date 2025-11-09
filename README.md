@@ -5,6 +5,7 @@
 ## What is This?
 
 A complete development system for Cursor IDE that combines:
+
 - 🤖 **Auto-Detection**: Just describe what you want - AI handles the rest
 - 📋 **Spec-Driven Development**: Plans auto-generate for features, auto-update during implementation
 - 🔄 **RIPER-5 Protocol**: 5-phase execution framework (Research → Innovate → Plan → Execute → Review)
@@ -46,6 +47,7 @@ AI: [MODE: RESEARCH]
 ---
 
 **Alternative: Use explicit commands if you prefer**
+
 1. Type: `@generate-plan.md`
 2. Describe your feature
 3. Choose: SIMPLE or COMPLEX
@@ -60,13 +62,13 @@ You: "Add a user profile page to my app"
 
 AI: [MODE: RESEARCH]
      I notice this project doesn't have a context file yet.
-     
+
      Should I run @generate-context.md to understand your:
      - Tech stack and versions
      - Project structure
      - Conventions
      - API patterns
-     
+
      This will help me create a better plan. (yes/no)
 
 You: "yes"
@@ -88,12 +90,14 @@ This context file is automatically referenced during RESEARCH mode to validate i
 **Use for**: Single component, endpoint, or UI element that ships in one session
 
 **Characteristics**:
+
 - 8-15 atomic steps
 - Completable in 1-2 hours
 - Single RIPER-5 cycle
 - No phased delivery
 
 **Example**: Add a "Delete Account" button
+
 ```
 @generate-plan.md → SIMPLE
 RESEARCH (10 min) → INNOVATE (5 min) → PLAN (15 min) →
@@ -107,6 +111,7 @@ EXECUTE (45 min) → REVIEW (10 min) → ✅ Done in one session
 **Use for**: Features spanning multiple subsystems, requiring phased delivery
 
 **Characteristics**:
+
 - Multiple RFCs (Request for Comments)
 - Phase tracking (✅ Complete, 🚧 In Progress, ⏳ Planned)
 - "What's Functional Now" summaries after each phase
@@ -143,6 +148,7 @@ Plan updated: ✅✅✅ All Phases Complete
 ```
 
 **Key Benefits**:
+
 - ✅ Date-stamped plan survives across sessions
 - ✅ "What's Functional Now" tracks incremental progress
 - ✅ Each phase independently deployable and testable
@@ -172,6 +178,7 @@ Plan updated: ✅✅✅ All Phases Complete
 ## Why Use This?
 
 ### Before RIPER-5
+
 - ❌ AI codes before understanding requirements
 - ❌ Hours wasted on wrong approaches
 - ❌ Lost context between sessions
@@ -179,6 +186,7 @@ Plan updated: ✅✅✅ All Phases Complete
 - ❌ Need to learn complex commands and workflows
 
 ### After RIPER-5
+
 - ✅ **Just describe what you want - AI auto-detects and handles workflow**
 - ✅ AI can't code without explicit approval
 - ✅ Wrong approaches caught in 30-min planning phase (auto-generated)
@@ -228,6 +236,7 @@ Auto-updates: plan progress, context, memories
 ## Features
 
 ### 🤖 Auto-Detection (NEW!)
+
 - **Auto-detects feature requests** - No need to invoke commands manually
 - **Auto-suggests context generation** - Asks to scan codebase if needed
 - **Auto-triggers plan generation** - Creates plans for non-trivial features
@@ -236,6 +245,7 @@ Auto-updates: plan progress, context, memories
 - **Manual override available** - Explicit commands still work for full control
 
 ### 🎯 Spec-Driven Development
+
 - **Auto-generates** SIMPLE (one-session) or COMPLEX (multi-phase) plans
 - **Auto-updates** plans during implementation
 - Date-stamped plans: `.cursor/plans/[feature]_PLAN_06-11-25.md`
@@ -243,14 +253,16 @@ Auto-updates: plan progress, context, memories
 - Import checklists directly into Cursor Plan mode
 
 ### 🔄 RIPER-5 Execution
+
 - **Auto-starts** in RESEARCH mode (no manual trigger needed)
 - **RESEARCH**: Understand before acting
-- **INNOVATE**: Explore options systematically  
+- **INNOVATE**: Explore options systematically
 - **PLAN**: Finalize before implementing
 - **EXECUTE**: Code only with explicit approval
 - **REVIEW**: Auto-verifies against plan
 
 ### 🧠 Auto-Learning
+
 - **Auto-updates** context after every session
 - **Auto-updates** plans during implementation
 - Captures user preferences in memories
@@ -258,6 +270,7 @@ Auto-updates: plan progress, context, memories
 - Context repository stays current
 
 ### 🛡️ Safety Features
+
 - **Phase Locking**: AI can't code in RESEARCH/INNOVATE/PLAN modes
 - **50% Check-in**: Mid-implementation validation
 - **Self-Review**: AI auto-flags its own deviations
@@ -266,6 +279,7 @@ Auto-updates: plan progress, context, memories
 ## Documentation
 
 Full documentation is in `.cursor/README.md` including:
+
 - Complete Getting Started guide
 - Step-by-step RIPER-5 workflow
 - Quick command reference
@@ -278,7 +292,7 @@ Full documentation is in `.cursor/README.md` including:
 This system is designed to be adapted:
 
 1. **Customize rules** in `.cursor/rules/` for your tech stack
-2. **Update context** in `.cursor/context/all-context.md` with your repo structure  
+2. **Update context** in `.cursor/context/all-context.md` with your repo structure
 3. **Modify plan templates** in `.cursor/commands/generate-plan.md`
 4. **Keep RIPER-5 protocol** intact (it's the enforcement mechanism)
 
@@ -303,7 +317,7 @@ MIT License - Feel free to use, modify, and distribute
 
 ## Contributing
 
-Found a bug? Have an improvement? 
+Found a bug? Have an improvement?
 
 1. Fork this repo
 2. Use the system to create a plan for your change
@@ -322,4 +336,3 @@ Inspired by systematic software engineering practices and the need for better AI
 **Last Updated**: 2025-11-06
 
 ⭐ **If this system saves you time, give it a star!**
-

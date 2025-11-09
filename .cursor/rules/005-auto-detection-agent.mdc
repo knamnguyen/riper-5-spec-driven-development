@@ -165,6 +165,84 @@ Should I continue with Phase 2? (yes/no)
 
 **Honor explicit commands** - do not second-guess or auto-trigger additional workflows.
 
+### 8. Plan Continuation vs New Feature Detection
+
+**Plan Continuation (Fast-track to EXECUTE):**
+
+Detect when user says:
+
+- "continue [plan-name]"
+- "next phase" or "Phase X" (when plan attached)
+- "implement [feature]" with existing plan file open/attached
+
+**Validation checks before fast-tracking:**
+
+1. Plan file exists and is attached/referenced
+2. Current phase has ✅ (complete) or 🚧 (in progress) markers
+3. Next phase specifications are detailed and unambiguous
+4. Sample data or fixtures available (if needed)
+
+**Auto-response pattern:**
+
+```
+[MODE: RESEARCH]
+
+Continuing [feature-name] from existing plan (dated [date]).
+
+Current status:
+- ✅ Phase 1: [description]
+- ✅ Phase 2: [description]
+- ⏳ Phase 3: [description] - **NEXT**
+
+Phase 3 specs:
+- [Key implementation detail 1]
+- [Key implementation detail 2]
+- Acceptance: [criteria]
+
+This is straightforward execution from the approved plan.
+
+Should I proceed? Reply "ENTER EXECUTE MODE"
+```
+
+**New Feature (Full RIPER-5 workflow):**
+
+Detect when:
+
+- No existing plan file for the feature
+- User describes desired outcome without specifications
+- Request requires architecture decisions
+- Multiple implementation approaches possible
+
+**Auto-response pattern:**
+
+```
+[MODE: RESEARCH]
+
+I'll help you build [feature]. Let me understand your codebase first.
+
+[Perform research]
+
+Based on my research, this looks like a [SIMPLE/COMPLEX] feature.
+
+I'll generate a plan now: @generate-plan.md
+```
+
+### 9. Complexity Evaluation Criteria
+
+**Execute without new plan when:**
+
+- Existing plan file with clear next phase
+- Specifications complete and unambiguous
+- No architectural decisions needed
+- Sample data/fixtures provided
+
+**Generate plan when:**
+
+- No existing plan for this feature
+- User describes goal but no specifications
+- Multiple approaches need evaluation
+- Cross-cutting concerns or dependencies
+
 ## Auto-Transition Logic
 
 ### Smooth Mode Transitions

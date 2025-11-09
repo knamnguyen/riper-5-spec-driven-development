@@ -119,6 +119,7 @@ Permitted: Detailed plans with exact file paths, function names, and changes
 Forbidden: Any implementation or code writing, even "example code"
 Requirement: Plan must be comprehensive enough that no creative decisions are needed during implementation
 Mandatory Final Step: Convert the entire plan into a numbered, sequential CHECKLIST with each atomic action as a separate item
+**Plan Artifact Exception:** After the user confirms the drafted plan content, the assistant may create or update `.cursor/plans/[feature]_PLAN_[dd-mm-yy].md` while remaining in PLAN mode. This exception applies only to plan files; no source code or other repository files may be modified while still in PLAN mode.
 
 **PLANNING WORKFLOW INTEGRATION**
 
@@ -246,6 +247,54 @@ Output Format: Begin with [MODE: EXECUTE], then ONLY implementation matching the
   - ":cross_mark: Deviations detected" (list concise bullets)
 - If material deviations require changes to scope/approach, STOP and proceed to UPDATE PROCESS to reconcile plan and rules before continuing.
 
+### EXECUTION CONTINUATION FROM EXISTING PLANS
+
+**When to Fast-Track to EXECUTE Mode:**
+
+If ALL of the following conditions are met:
+
+1. User says "continue [plan-name]" or references existing plan file
+2. Comprehensive plan exists with:
+   - Clear phase breakdown with status markers (✅/🚧/⏳)
+   - Detailed implementation checklist with specific file paths
+   - RFCs or acceptance criteria defined
+   - Sample data/fixtures available (if applicable)
+3. Current phase has clear, unambiguous specifications
+4. No architecture decisions or approach selection needed
+
+**Fast-Track Protocol:**
+
+1. RESEARCH mode: Read plan, identify current phase, examine relevant files
+2. Offer direct transition: "Should I proceed with implementation? Reply 'ENTER EXECUTE MODE'"
+3. Skip INNOVATE and PLAN modes (specifications already finalized)
+4. Proceed directly to EXECUTE upon user approval
+
+**Example:**
+
+```
+User: "continue @feature_PLAN_07-11-25.md"
+
+AI Response:
+[MODE: RESEARCH]
+
+Current Status: Phase 2 complete, Phase 3 next (implement Facebook parsing)
+
+Phase 3 has clear specs:
+- Sample data: sample-response-format/facebook.json
+- Field paths: likes, num_comments, num_shares
+- Acceptance: accurate counts or zero fallbacks
+
+Should I proceed with implementation? Reply "ENTER EXECUTE MODE"
+```
+
+**When NOT to Fast-Track:**
+
+- Plan has ambiguities or missing specifications
+- Technical approach unclear or needs validation
+- User asks exploratory questions ("how should we...", "what's the best way...")
+- Phase requires architectural decisions
+- No existing plan or plan is outdated
+
 MODE 5: FAST
 
 [MODE: FAST]
@@ -345,6 +394,41 @@ For each approved improvement:
 - Plan Update: Update the current feature's plan file (`[feature or system's name]_PLAN_[dd-mm-yy].md`) to reflect approved changes and deviations identified during execution/self-review.
 - Context Update: Update `.cursor/context/all-context.md` if conventions, stack choices, or cross-cutting process changes were introduced or clarified.
 - Validation: Ensure cursor rule file format compliance and no contradictions
+- Completed Plan Archiving: If every phase/status indicator in the plan is ✅ and no outstanding items remain, move the plan file from `.cursor/plans/` to `.cursor/plans/completed/` (create the `completed` directory if it does not exist). After moving, rename it to `completed_[feature or system's name]_PLAN_[dd-mm-yy].md` and mention the new path in your summary so future sessions can locate the archive.
+
+for example
+
+```
+mv /Users/knamnguyen/Documents/0-Programming/gifavatar/.cursor/plans/social-referral-extension_PLAN_06-11-25.md /Users/knamnguyen/Documents/0-Programming/gifavatar/.cursor/plans/completed/completed_social-referral-extension_PLAN_06-11-25.md
+```
+
+**Plan File Archiving Pattern - CRITICAL:**
+
+When archiving completed plans, follow this sequence to prevent duplicates:
+
+1. **Update Status First:** Make all status changes (✅ markers, checklist updates) while file is in original location
+2. **Accept Changes:** Wait for user to accept file changes before archiving
+3. **Create Archive Directory:** `mkdir -p .cursor/plans/completed`
+4. **Move Operation:** Use `mv` command to move (not copy) file
+5. **Verify & Cleanup:** After move, explicitly verify source file is gone and delete if it remains
+
+**Implementation sequence:**
+
+```bash
+# 1. All search_replace operations to update plan status
+# 2. Wait for user acceptance
+# 3. Create archive directory
+mkdir -p .cursor/plans/completed
+
+# 4. Move file with rename
+mv .cursor/plans/feature_PLAN_dd-mm-yy.md .cursor/plans/completed/completed_feature_PLAN_dd-mm-yy.md
+
+# 5. Explicit cleanup verification
+# If source file still exists (Cursor IDE may re-save with pending edits):
+delete_file .cursor/plans/feature_PLAN_dd-mm-yy.md
+```
+
+**Rationale:** Cursor IDE may re-save files with pending edits after `mv` command executes, causing original to remain. Explicit `delete_file` ensures no duplicates remain in source directory.
 
 Phase 5: Final Review
 
@@ -373,7 +457,7 @@ Output Format: Begin with [MODE: UPDATE PROCESS], then systematic analysis and i
 
 [MODE: PLAN]
 
-- FORBIDDEN: Any file creation, editing, or writing
+- FORBIDDEN: Any file creation, editing, or writing **except for the Plan Artifact Exception described above**
 - FORBIDDEN: Any code implementation
 - PERMITTED: Detailed specifications and implementation plans only
 

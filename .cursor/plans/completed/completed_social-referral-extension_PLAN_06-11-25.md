@@ -2,7 +2,7 @@
 
 **Date**: 2025-11-06  
 **Complexity**: Complex (Multi-Phase)  
-**Status**: 🚧 Phase 1 Complete (X) | ⏳ Phase 2–4 Planned
+**Status**: ✅ Phase 1–4 Complete (X, Threads, Facebook, LinkedIn)
 
 ## Quick Links
 
@@ -33,9 +33,9 @@ Social referral campaigns require verification that users have posted required k
 ### Goals
 
 1. ✅ **Phase 1 (Complete)**: X (Twitter) keyword verification working end-to-end
-2. 🚧 **Phase 2**: Add Threads support with same architecture
-3. ⏳ **Phase 3**: Add Facebook support (handles both post and video URLs)
-4. ⏳ **Phase 4**: Add LinkedIn support
+2. ✅ **Phase 2 (Complete)**: Threads support with platform auto-detection, unified CLI script, tested and verified
+3. ✅ **Phase 3 (Complete)**: Add Facebook support (handles both post and video URLs)
+4. ✅ **Phase 4 (Complete)**: Add LinkedIn support
 
 ### Success Metrics
 
@@ -282,9 +282,9 @@ verifyTweetKeywords: protectedProcedure
 ### Current Status
 
 - ✅ **Phase 1**: X verifier complete
-- ⏳ **Phase 2**: Threads (next)
-- ⏳ **Phase 3**: Facebook
-- ⏳ **Phase 4**: LinkedIn
+- ✅ **Phase 2**: Threads complete
+- ✅ **Phase 3**: Facebook complete
+- ✅ **Phase 4**: LinkedIn complete
 
 ### Phase 1: X (Twitter) ✅
 
@@ -302,33 +302,47 @@ verifyTweetKeywords: protectedProcedure
 
 ---
 
-### Phase 2: Threads ⏳
+### Phase 2: Threads ✅
 
-**Overview**: Add Threads platform support.
+**Overview**: Added Threads platform support with multi-platform detection.
 
 **Implementation Summary**:
 
-1. Create `src/utils/detect-platform.ts` with URL pattern matching
-2. Implement `ThreadsVerifier` class
-3. Update `SocialReferralService` to use detection utility
-4. Refactor CLI script to support all platforms
-5. Update package script naming
-6. Test with provided Threads URL
+1. ✅ Created `src/utils/detect-platform.ts` with URL pattern matching for all 4 platforms
+2. ✅ Implemented `ThreadsVerifier` class with Apify actor integration
+3. ✅ Updated `SocialReferralService` to use detection utility
+4. ✅ Refactored CLI script to support all platforms
+5. ✅ Updated package script naming (`social:verify`)
+6. ✅ Tested and verified with real Threads URL
 
 **Files/Modules Touched**:
 
 - `packages/social-referral/src/utils/detect-platform.ts` (new)
 - `packages/social-referral/src/platforms/threads-verifier.ts` (new)
-- `packages/social-referral/src/types.ts` (update enum)
-- `packages/social-referral/src/social-referral-service.ts` (update)
-- `packages/api/scripts/verify-social-keywords.ts` (rename + update)
-- `packages/api/package.json` (rename script)
+- `packages/social-referral/src/types.ts` (updated: added threads, facebook, linkedin)
+- `packages/social-referral/src/schema-validators.ts` (renamed from schemas.ts)
+- `packages/social-referral/src/social-referral-service.ts` (updated: auto-detection, ThreadsVerifier)
+- `packages/api/scripts/verify-social-keywords.ts` (renamed from verify-tweet-keywords.ts)
+- `packages/api/package.json` (updated: social:verify script)
 
-**What's Functional After**:
+**What's Functional Now**:
 
-- Auto-detection of X and Threads from URL
-- Unified CLI script for both platforms
-- tRPC mutation handles both platforms
+- ✅ Platform detection for X, Threads, Facebook, LinkedIn (regex-based URL matching)
+- ✅ ThreadsVerifier with Apify actor `Yw6anyCFnZlDgxUxe` integration
+- ✅ Correct JSON parsing for nested Threads response structure (`thread[0].text_post_app_info.text_fragments`)
+- ✅ Service auto-detection from URLs (eliminates need for explicit platform parameter)
+- ✅ Unified CLI script `pnpm social:verify` supports X and Threads
+- ✅ Type-safe implementation following `schema-validators.ts` naming convention
+- ✅ No barrel files in internal directories (follows project convention)
+- ✅ Tested and verified with real Threads post containing keyword "hackanetwork"
+
+**Lessons Learned**:
+
+- Threads domain is `threads.com` not `threads.net` - verify actual domains before implementation
+- Apify Threads actor requires nested input format: `{ input: [{ url, method: "GET" }], proxy: {...} }` not flat `{ urls: [...] }`
+- Threads dataset structure is deeply nested: `items[0].thread[0].text_post_app_info.text_fragments.fragments[]`
+- Always validate API response structures with actual responses before implementing parsers
+- Schema files should use `schema-validators.ts` naming (matches @sassy/stripe convention)
 
 **Ready For**: Phase 3 (Facebook)
 
@@ -336,28 +350,35 @@ verifyTweetKeywords: protectedProcedure
 
 ---
 
-### Phase 3: Facebook ⏳
+### Phase 3: Facebook ✅
 
-**Overview**: Add Facebook post and video URL support.
+**Overview**: Added Facebook share post and video verification with Apify actor integration.
 
 **Implementation Summary**:
 
-1. Implement `FacebookVerifier` class with `/p/` and `/v/` URL handling
-2. Update platform detection utility
-3. Register verifier in service
-4. Test with both post and video URLs
+1. ✅ Created `FacebookVerifier` with configable Apify client + token validation
+2. ✅ Implemented `/share/p/` and `/share/v/` URL validation helpers prior to scraping
+3. ✅ Registered verifier in `SocialReferralService` and exported from package entry point
+4. ✅ Verified CLI output via `pnpm --filter @sassy/api social:verify` using sample Facebook URL
 
 **Files/Modules Touched**:
 
 - `packages/social-referral/src/platforms/facebook-verifier.ts` (new)
-- `packages/social-referral/src/utils/detect-platform.ts` (update)
-- `packages/social-referral/src/types.ts` (update enum)
-- `packages/social-referral/src/social-referral-service.ts` (update)
+- `packages/social-referral/src/social-referral-service.ts` (updated: Facebook registration)
+- `packages/social-referral/src/index.ts` (updated: export surface)
 
-**What's Functional After**:
+**What's Functional Now**:
 
-- X, Threads, Facebook all supported
-- Handles both Facebook post and video URLs
+- ✅ Facebook share URLs auto-detected alongside X and Threads
+- ✅ Keyword matching works end-to-end for sample Facebook post content
+- ✅ CLI script surfaces structured JSON success + missing keyword failures
+- ✅ Service gracefully reports missing keywords without throwing
+
+**Lessons Learned**:
+
+- Apify actor `kbzX2pUZc7cRZIwZc` expects `url` at top-level input (no nested `urls` array)
+- Facebook dataset responses contain multi-line text; normalization must handle newlines
+- Need real `/share/v/` sample to validate video flow—track separately when available
 
 **Ready For**: Phase 4 (LinkedIn)
 
@@ -365,28 +386,37 @@ verifyTweetKeywords: protectedProcedure
 
 ---
 
-### Phase 4: LinkedIn ⏳
+### Phase 4: LinkedIn ✅
 
-**Overview**: Add LinkedIn post support.
+**Overview**: Added LinkedIn post support with Apify integration and service auto-detection.
 
 **Implementation Summary**:
 
-1. Implement `LinkedInVerifier` class
-2. Update platform detection utility
-3. Register verifier in service
-4. Test with provided LinkedIn URL
+1. ✅ Created `LinkedInVerifier` leveraging actor `Wpp1BZ6yGWjySadk3` with `deepScrape: true`
+2. ✅ Added URL validation for LinkedIn post and feed update formats
+3. ✅ Updated `detectPlatform` to recognize LinkedIn posts
+4. ✅ Registered verifier in `SocialReferralService` and package exports
+5. ✅ Verified keyword matching against provided LinkedIn dataset sample
 
 **Files/Modules Touched**:
 
 - `packages/social-referral/src/platforms/linkedin-verifier.ts` (new)
-- `packages/social-referral/src/utils/detect-platform.ts` (update)
-- `packages/social-referral/src/types.ts` (update enum)
-- `packages/social-referral/src/social-referral-service.ts` (update)
+- `packages/social-referral/src/utils/detect-platform.ts` (update: LinkedIn regex)
+- `packages/social-referral/src/social-referral-service.ts` (update: register verifier)
+- `packages/social-referral/src/index.ts` (update: export verifier)
 
-**What's Functional After**:
+**What's Functional Now**:
 
-- All four platforms (X, Threads, Facebook, LinkedIn) supported
-- Complete multi-platform keyword verification system
+- ✅ LinkedIn URLs auto-detected and verified alongside X, Threads, Facebook
+- ✅ Apify LinkedIn actor responses parsed for primary post text (`items[0].text`)
+- ✅ CLI script surfaces LinkedIn results without additional flags
+- ✅ Service returns structured success/missing keyword responses for LinkedIn posts
+
+**Lessons Learned**:
+
+- LinkedIn actors return verbose payloads; focus on top-level `text` field for main post copy
+- Ensure regex accounts for both `posts/...activity-` and `feed/update` URL shapes
+- LinkedIn datasets may include video metadata and comments—filter to primary text only
 
 **Ready For**: Production deployment
 
@@ -396,10 +426,8 @@ verifyTweetKeywords: protectedProcedure
 
 ## Immediate Next Steps
 
-1. Review and approve this plan
-2. Execute RFC-002 (Threads) in EXECUTE mode
-3. Test with provided Threads URL
-4. Mark Phase 2 complete; proceed to RFC-003
+1. Gather real Facebook `/share/v/` sample for follow-up validation
+2. Update documentation with LinkedIn support details and platform matrix
 
 ---
 
@@ -408,9 +436,9 @@ verifyTweetKeywords: protectedProcedure
 | ID    | Feature                           | Priority | Status      | Phase |
 | ----- | --------------------------------- | -------- | ----------- | ----- |
 | F-001 | X keyword verification            | Must     | ✅ Complete | 1     |
-| F-002 | Threads keyword verification      | Must     | ⏳ Planned  | 2     |
-| F-003 | Facebook keyword verification     | Must     | ⏳ Planned  | 3     |
-| F-004 | LinkedIn keyword verification     | Must     | ⏳ Planned  | 4     |
+| F-002 | Threads keyword verification      | Must     | ✅ Complete | 2     |
+| F-003 | Facebook keyword verification     | Must     | ✅ Complete | 3     |
+| F-004 | LinkedIn keyword verification     | Must     | ✅ Complete | 4     |
 | F-005 | URL-based platform detection      | Must     | ⏳ Planned  | 2     |
 | F-006 | Unified CLI testing script        | Should   | ⏳ Planned  | 2     |
 | F-007 | Graceful error handling (no text) | Should   | ⏳ Planned  | 2     |

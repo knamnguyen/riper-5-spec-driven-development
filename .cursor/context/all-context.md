@@ -23,7 +23,7 @@ Product & PRD Context
     - GIF-004: Asset listing (uploads, background-removed, results)
     - AUTH-001: Clerk auth and protected routes
     - STORE-001: Supabase storage with public URLs
-    - REF-001: Verify social post keywords (X via Apify; Threads/Facebook/LinkedIn planned)
+  - REF-001: Verify social post keywords (X, Threads, Facebook, LinkedIn via Apify)
   - Should: Basic UI previews, theme, simple share UX
   - Could: Additional animation styles, quotas/limits
   - Won’t (now): Subscriptions/portal (Stripe)
@@ -55,9 +55,9 @@ Client -> tRPC editor.listAssets
   - Return last N of uploads, backgroundRemoved, results
 
 5) Referral verification
-Client -> tRPC social.verifyTweetKeywords(url, keywords)
-  - Platform: X/Twitter (Apify actor) -> dataset -> extract post text -> keyword match
-  - Future: Threads, Facebook, LinkedIn (providers TBD)
+Client -> tRPC social.verifyKeywords(url, keywords, platform?)
+  - Platforms: X (Twitter), Threads, Facebook, LinkedIn (Apify actors) -> dataset -> extract post text -> keyword match
+  - Auto-detection: Platform determined from URL if not explicitly provided
 ```
 
 - Architecture Decisions (highlights):
@@ -70,7 +70,7 @@ Client -> tRPC social.verifyTweetKeywords(url, keywords)
 - API Surface (tRPC):
   - editor (packages/api/src/router/editor.ts): uploadStart, removeBackground, generateGif, listAssets
   - user (packages/api/src/router/user.ts): checkAccess, getDailyCommentCount, create, update, delete, me
-  - social (packages/api/src/router/social.ts): verifyTweetKeywords
+- social (packages/api/src/router/social.ts): verifyTweetKeywords (supports X, Threads, Facebook, LinkedIn via service auto-detection)
   - stripe (packages/api/src/router/stripe.ts): createCheckout, createCustomerPortal, checkAccess [present, not used now]
 - Schemas Snapshot (Prisma: packages/db/prisma/schema.prisma):
   - User { id, firstName?, lastName?, username?, primaryEmailAddress, imageUrl?, clerkUserProperties?, stripeCustomerId?, accessType, stripeUserProperties?, dailyAIcomments, createdAt, updatedAt }
@@ -103,7 +103,7 @@ Monorepo Layout
   - @sassy/ui: UI components (shadcn-derived), theme, utils
   - @sassy/validators: shared Zod validators
   - @sassy/supabase-bucket: Supabase helpers (server/public clients, upload/getPublicUrl)
-  - @sassy/social-referral: Apify/X keyword verification
+  - @sassy/social-referral: Social platform keyword verification (X, Threads, Facebook, LinkedIn via Apify; multi-platform detection with URL regex)
   - @sassy/stripe: Stripe service and scripts (present, out-of-scope now)
 - tooling/: eslint, prettier, tailwind, typescript, sync-template
 
@@ -193,13 +193,13 @@ References & Key Files
 - API: `packages/api/src/trpc.ts`, `packages/api/src/router/*`, `packages/api/src/index.ts`
 - DB: `packages/db/prisma/schema.prisma`, `packages/db/src/index.ts`, `packages/db/generated/*`
 - Storage: `packages/supabase-bucket/src/index.ts`
-- Referral: `packages/social-referral/src/social-referral-service.ts`, `platforms/x-verifier.ts`
+- Referral: `packages/social-referral/src/social-referral-service.ts`, `platforms/x-verifier.ts`, `platforms/threads-verifier.ts`, `utils/detect-platform.ts`, `schema-validators.ts`
 - Tooling: `tooling/eslint/*`, `tooling/prettier/index.js`, `tooling/tailwind/*`, `tooling/typescript/*`
 - Product reference: `.cursor/context/example-complex-prd.md` (structure/depth reference)
 
 Open Questions
 
-- Implement referral verification for Threads, Facebook, LinkedIn: using apify apis with other actor ids to be implemented later
+- Validate Facebook `/share/v/` flows with additional samples; monitor Apify actor stability across platforms
 - Timeline for cleaning legacy "EngageKit" branding in assets/metadata?
 
 Appendices
@@ -219,7 +219,8 @@ A) tRPC Procedures by Router
   - delete(input: { id: string }) → User
   - me() → User | null
 - social
-  - verifyTweetKeywords(input: { platform: "x"; url: string; keywords: string[] }) → { containsAll, matchedKeywords, missingKeywords, text }
+  - verifyKeywords(input: { platform?: "x"|"threads"|"facebook"|"linkedin"; url: string; keywords: string[] }) → { platform, url, text, containsAll, matchedKeywords, missingKeywords }
+    (Note: platform auto-detected from URL if not provided)
 - stripe (present; not required now)
   - createCheckout(input: purchaseType) → checkoutUrl
   - createCustomerPortal(input: { returnUrl? }) → { url }
@@ -229,7 +230,7 @@ B) Package Scripts (selected)
 
 - Root package.json: build (turbo), dev (turbo watch), postinstall (prisma generate + copy engine), lint/format/typecheck
 - apps/nextjs: dev/build/start with `with-env`, typecheck, lint, format
-- packages/api: typecheck, lint, social:verify-tweet (bun + with-env)
+- packages/api: typecheck, lint, social:verify (bun + with-env; unified script for X, Threads, Facebook, LinkedIn)
 - packages/db: db:generate/push/migrate/studio/zod with `with-env`
 - packages/stripe: stripe:prices / stripe:portal (bun + with-env)
 - packages/social-referral: with-env present

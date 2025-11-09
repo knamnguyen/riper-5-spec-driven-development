@@ -173,6 +173,7 @@ Before generating, review `.cursor/context/example-complex-prd.md` to calibrate 
 ### Deliverable
 
 - Create `.cursor/plans/` directory if it doesn't exist
+- Before naming the new plan, list existing completed plans to avoid duplicate feature names (e.g., `ls -1 .cursor/plans/completed/ | tail`)
 - Save the entire output to `.cursor/plans/[feature or system's name]_PLAN_[dd-mm-yy].md`
 
 ### Begin
