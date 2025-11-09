@@ -164,16 +164,24 @@ Plan updated: ✅✅✅ All Phases Complete
 ├── README.md                    # Complete documentation
 ├── commands/
 │   ├── generate-plan.md         # Create feature specs
-│   └── generate-context.md      # Update repo knowledge
+│   ├── generate-context.md      # Update repo knowledge
+│   ├── sync-to-riper5.md        # Sync improvements TO the core system
+│   └── sync-from-riper5.md      # Sync improvements FROM the core system
 ├── context/
 │   ├── all-context.md           # Repository structure template
 │   └── example-complex-prd.md   # Reference for complex plans
 ├── plans/
+│   ├── completed/               # Archived completed plans
 │   └── [Examples of real plans]
 └── rules/
     ├── riper-5-mode.mdc         # Execution protocol
     └── [Coding standards and best practices]
 ```
+
+### ⚙️ System Syncing
+
+- **`@sync-to-riper5.md`**: Contribute your local rule and command improvements back to the core `riper-5-spec-driven-development` repository.
+- **`@sync-from-riper5.md`**: Pull the latest updates from the core system into your project's `.cursor` folder.
 
 ## Why Use This?
 
@@ -237,12 +245,12 @@ Auto-updates: plan progress, context, memories
 
 ### 🤖 Auto-Detection (NEW!)
 
-- **Auto-detects feature requests** - No need to invoke commands manually
-- **Auto-suggests context generation** - Asks to scan codebase if needed
-- **Auto-triggers plan generation** - Creates plans for non-trivial features
-- **Auto-resumes work** - Picks up where you left off from plan files
-- **Smart classification** - Distinguishes questions vs features vs trivial fixes
-- **Manual override available** - Explicit commands still work for full control
+- **Auto-detects feature requests** - No need to invoke commands manually.
+- **Auto-suggests context generation** - Asks to scan codebase if needed.
+- **Auto-triggers plan generation** - Creates plans for non-trivial features.
+- **Auto-resumes & Fast-tracks execution** - Detects existing plans and can skip directly to implementation with your approval, bypassing planning phases.
+- **Smart classification** - Distinguishes questions vs features vs trivial fixes.
+- **Manual override available** - Explicit commands still work for full control.
 
 ### 🎯 Spec-Driven Development
 
@@ -333,6 +341,6 @@ Inspired by systematic software engineering practices and the need for better AI
 ---
 
 **Version**: 1.0  
-**Last Updated**: 2025-11-06
+**Last Updated**: 2025-11-09
 
 ⭐ **If this system saves you time, give it a star!**
