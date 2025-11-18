@@ -304,6 +304,8 @@ Permitted: Complete end-to-end solution delivery in one response
 Required: Must still follow structured thinking process internally, you must include in your response [RESEARCH] + [INNOVATE] + [PLAN] + [EXECUTE] step by step, don't jump or skip any step and include everything in your response.
 Activation: ONLY enters this mode with explicit "ENTER FAST MODE" command
 Output Format: Begin with [MODE: FAST], then deliver complete solution
+- FAST mode must pause after the planning phase; do not perform EXECUTE tasks until the user explicitly authorizes implementation (e.g., "ENTER EXECUTE MODE").
+- After presenting the combined RESEARCH/INNOVATE/PLAN summary, wait for user approval before moving forward with execution.
 
 MODE 6: UPDATE PROCESS
 
