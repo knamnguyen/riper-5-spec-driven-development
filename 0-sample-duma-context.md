@@ -1,7 +1,7 @@
 # Duma - Social Activity Discovery App
 
 ## Project Overview
-A Tinder-style social discovery app for finding and joining small group activities. Users swipe through activity cards, view detailed activity information, see host and participant profiles, manage their activities, chat with others, and create their own events.
+A Tinder-style social discovery app for finding and joining small group activities. Users swipe through activity cards, view detailed activity information, see host and participant profiles, manage their activities, chat with others, and create their own events. Focus on small group activities with 3-4 people like coding session, work date, going to dinner to explore, concerts, etc. People can create activity like events on Luma - but focused on small activities insteads.
 
 ## Tech Stack
 - **Framework**: React 18.3.1 + TypeScript

@@ -1,249 +1,539 @@
-Repository Context
+# Repository Context
 
-- Scanned at: 2025-11-06T00:00:00Z
-- Repo HEAD: 8835d1809eaa21e3822ec4ea8536f218ab0da099
-- Mode: Full Scan
+**Scanned at:** 2025-11-26  
+**Repo HEAD:** 749cb26ec7063251c9ccfdb601c3b1f488219c67  
+**Mode:** Full Scan
 
-Product & PRD Context
+---
 
-- Overview: Gifavatr lets users upload a personal photo and generate animated GIF avatars they can use on Google account profiles and platforms like Linktree, Beacons, Pixiv, dev.to, Fandom, MyAnimeList, Medium, Substack, VGen, Discord, and Patreon. Emphasis on built‑in virality: users can generate shareable assets and verify social referrals (via X/Twitter/Threads/Facebook/LinkedIn keyword checks) to encourage organic growth.
-- Goals & Success Metrics:
-  - Increase completed GIF generations per active user
-  - Successful background removals (Replicate) without retries
-  - Asset shares/uses across external profiles
-  - Verified referral posts (keywords matched) and referral conversions
-- Scope:
-  - In-scope: Clerk auth, image upload and re‑encode, background removal with Replicate, GIF generation and storage on Supabase, recent-asset listing, social referral keyword verification (X/Twitter/Threads/Facebook/LinkedIn via Apify and other providers).
-  - Out-of-scope (now): Stripe billing and Loops marketing flows (present in codebase, not needed by product now).
-- Features Catalog (MoSCoW):
-  - Must
-    - GIF-001: Upload avatar (re-encode/compress)
-    - GIF-002: Background removal (Replicate rembg)
-    - GIF-003: GIF generation (rise-bottom | rise-left | rise-right)
-    - GIF-004: Asset listing (uploads, background-removed, results)
-    - AUTH-001: Clerk auth and protected routes
-    - STORE-001: Supabase storage with public URLs
-  - REF-001: Verify social post keywords (X, Threads, Facebook, LinkedIn via Apify)
-  - Should: Basic UI previews, theme, simple share UX
-  - Could: Additional animation styles, quotas/limits
-  - Won’t (now): Subscriptions/portal (Stripe)
-- User Journeys & Data Flow:
+## Changes since last update
 
-```text
-1) Upload
-Client -> tRPC editor.uploadStart
-  - Data URL (png/jpeg/webp) -> re-encode (Jimp)
-  - Supabase storage upload (server key) -> public URL
-  - DB: UserUpload { userId, path, mime }
+- **Initial context generation**: First scan of repository
+- **New project planned**: Duma neobrutalism rebuild (see plan: `duma-neobrutalism-rebuild_PLAN_26-11-25.md`)
+- **Sample project reference**: `0-sample-duma/` contains original Vite/React app to be rebuilt
 
-2) Background removal
-Client -> tRPC editor.removeBackground(uploadPath)
-  - Resolve public URL
-  - Replicate: fetch model meta -> create prediction -> poll -> download PNG
-  - Supabase storage upload (png) -> public URL
-  - DB: BackgroundRemoved { userId, sourceUploadId, path }
+---
 
-3) GIF generation
-Client -> tRPC editor.generateGif(bgRemovedPath, style, bgColor)
-  - Load cutout -> per-frame Jimp composites using sampleTransform
-  - Encode with gif-encoder-2
-  - Supabase storage upload (gif) -> public URL
-  - DB: UserResult { userId, path }
+## Product & PRD Context
 
-4) Listing assets
-Client -> tRPC editor.listAssets
-  - Return last N of uploads, backgroundRemoved, results
+### Overview
 
-5) Referral verification
-Client -> tRPC social.verifyKeywords(url, keywords, platform?)
-  - Platforms: X (Twitter), Threads, Facebook, LinkedIn (Apify actors) -> dataset -> extract post text -> keyword match
-  - Auto-detection: Platform determined from URL if not explicitly provided
+**RIPER-5 Spec-Driven Development System**: A systematic approach to AI-assisted development that prevents premature implementation and ensures quality. This repository contains the RIPER-5 system itself (rules, commands, templates) and a sample project (`0-sample-duma`) that will be rebuilt with a new tech stack and design system.
+
+**Planned Project: Duma Neobrutalism Rebuild**
+- **Type**: Social activity discovery app (Tinder-style swipe interface)
+- **Status**: Planning complete, execution pending
+- **Goal**: Rebuild exact same features with neobrutalism + Gumroad aesthetic and modern tech stack
+- **Plan File**: `.cursor/plans/duma-neobrutalism-rebuild_PLAN_26-11-25.md`
+
+### Goals & Success Metrics
+
+**RIPER-5 System Goals:**
+- Provide systematic development workflow
+- Auto-detect feature requests
+- Generate comprehensive plans
+- Maintain context across sessions
+
+**Duma Rebuild Goals:**
+- Feature parity with original app (9 core features)
+- Neobrutalism + Gumroad design aesthetic
+- Modern tech stack (Next.js App Router, Tailwind CSS 4, React Router v7, React Query v5)
+- Fully functional prototype on localhost
+
+### Scope (In/Out)
+
+**In Scope:**
+- Rebuild all 9 core features from original app
+- Apply neobrutalism design system
+- Use modern tech stack (Next.js, Tailwind CSS 4, etc.)
+- Mock data only (no real backend)
+- Localhost prototype
+
+**Out of Scope:**
+- Production deployment
+- Real authentication
+- Backend integration
+- Mobile app
+- Future features (filters, bookmarks, map view)
+
+### Features Catalog
+
+**Core Features (Must Have):**
+- M1: Swipe Feed (Home/Discover) - Tinder-style card swipe
+- M2: Activity Cards - Cover photo, badges, host info, participants
+- M3: Activity Detail Drawer - Full activity information
+- M4: User Profile Drawer - Profile photo, bio, interests, events
+- M5: My Activities Tab - Upcoming and past activities
+- M6: Hosted Activities Tab - User's created activities
+- M7: Profile Tab - User profile and stats
+- M8: Chat Tab - Conversations and messages
+- M9: Bottom Navigation - Fixed nav with 5 tabs
+
+**Future Features (Should Have - Deferred):**
+- S1: Activity Filters
+- S2: Bookmarks Feature
+- S3: Map View
+
+### User Journeys & Data Flow
+
+```
+User opens app
+    ↓
+Swipe Feed displays activities
+    ↓
+User swipes left/right or clicks like/dislike
+    ↓
+Next activity loads
+    ↓
+User clicks activity card
+    ↓
+Activity Detail Drawer opens
+    ↓
+User clicks participant avatar
+    ↓
+User Profile Drawer opens
+    ↓
+User navigates via bottom nav
+    ↓
+Different tab content displays (Activities, Chat, Profile, etc.)
 ```
 
-- Architecture Decisions (highlights):
-  - API via tRPC v11 with Clerk auth middleware; supports Next.js and chrome-extension via x-trpc-source + Clerk backend verification
-  - PostgreSQL (Supabase) with Prisma 6; node and edge clients generated; zod-prisma-types produces validators
-  - Domain services co-located as packages: `@sassy/supabase-bucket`, `@sassy/social-referral` (and `@sassy/stripe` currently unused)
-  - Next.js 15 (App Router), React 19, Tailwind v4 with shared presets (`@sassy/tailwind-config`)
-  - Monorepo env pattern via `with-env` (dotenv-cli) to load root .env from packages
-  - Legacy branding: some files reference "EngageKit"; product name is Gifavatr
-- API Surface (tRPC):
-  - editor (packages/api/src/router/editor.ts): uploadStart, removeBackground, generateGif, listAssets
-  - user (packages/api/src/router/user.ts): checkAccess, getDailyCommentCount, create, update, delete, me
-- social (packages/api/src/router/social.ts): verifyTweetKeywords (supports X, Threads, Facebook, LinkedIn via service auto-detection)
-  - stripe (packages/api/src/router/stripe.ts): createCheckout, createCustomerPortal, checkAccess [present, not used now]
-- Schemas Snapshot (Prisma: packages/db/prisma/schema.prisma):
-  - User { id, firstName?, lastName?, username?, primaryEmailAddress, imageUrl?, clerkUserProperties?, stripeCustomerId?, accessType, stripeUserProperties?, dailyAIcomments, createdAt, updatedAt }
-  - UserUpload { id (cuid), userId, path, mime, createdAt }
-  - BackgroundRemoved { id (cuid), userId, sourceUploadId, path, createdAt }
-  - UserResult { id (cuid), userId, path, createdAt }
+**Data Flow:**
+```
+Component → React Query Hook → Mock API Route → Mock Data → UI Update
+```
 
-Tech Stack Overview
+### Architecture Decisions
 
-| Area     | Technology                  | Version/Source                    |
-| -------- | --------------------------- | --------------------------------- |
-| App      | Next.js                     | ^15.2.x (apps/nextjs)             |
-| UI       | React                       | 19.x                              |
-| Styling  | Tailwind CSS                | ^4.1.8 with shared presets        |
-| API      | tRPC                        | v11 (server), SuperJSON           |
-| Auth     | Clerk                       | @clerk/nextjs                     |
-| DB       | Prisma                      | ^6.8.x + PostgreSQL (Supabase)    |
-| Storage  | Supabase Storage            | @supabase/supabase-js ^2.45.x     |
-| Media    | Jimp, gif-encoder-2         | ^0.22.x, ^1.0.x                   |
-| AI       | Replicate                   | REST API                          |
-| Referral | Apify Client                | ^2.10.x                           |
-| Tooling  | Turborepo, pnpm, TypeScript | turbo ^2.3.x, pnpm 10.x, TS 5.7.x |
+1. **Next.js App Router**: Latest Next.js pattern, Server Components by default
+2. **Tailwind CSS 4**: Latest version with CSS variables for design tokens
+3. **React Router v7**: Latest client-side routing
+4. **React Query v5**: Latest data fetching and caching
+5. **pnpm**: Package manager (not npm)
+6. **Neobrutalism Design**: Bold colors, thick borders, offset shadows, rounded corners
 
-Monorepo Layout
+### API Surface
 
-- apps/nextjs: Next.js 15 App Router application (UI + API routes integration)
-- packages/
-  - @sassy/api: tRPC routers, context, server caller
-  - @sassy/db: Prisma schema, generated node/edge clients, zod validators, db exports
-  - @sassy/ui: UI components (shadcn-derived), theme, utils
-  - @sassy/validators: shared Zod validators
-  - @sassy/supabase-bucket: Supabase helpers (server/public clients, upload/getPublicUrl)
-  - @sassy/social-referral: Social platform keyword verification (X, Threads, Facebook, LinkedIn via Apify; multi-platform detection with URL regex)
-  - @sassy/stripe: Stripe service and scripts (present, out-of-scope now)
-- tooling/: eslint, prettier, tailwind, typescript, sync-template
+**Mock API Routes (Planned):**
+- `GET /api/activities` - Returns all activities
+- `GET /api/users` - Returns all users
+- `GET /api/users/[id]` - Returns user by ID
+- `GET /api/conversations` - Returns all conversations
+- `GET /api/messages?conversationId=...` - Returns messages for conversation
 
-Package Manager & Scripts
+**React Query Hooks (Planned):**
+- `useActivities()` - Fetch all activities (in `duma-complex/app/hooks/`)
+- `useUsers()` - Fetch all users (in `duma-complex/app/hooks/`)
+- `useUser(id)` - Fetch user by ID (in `duma-complex/app/hooks/`)
+- `useConversations()` - Fetch all conversations (in `duma-complex/app/hooks/`)
+- `useMessages(conversationId)` - Fetch messages (in `duma-complex/app/hooks/`)
+- `useCurrentUser()` - Get current user (in `duma-complex/app/hooks/`)
 
-- Root uses pnpm + turbo. Notable scripts: build (turbo run), dev (turbo watch), postinstall (prisma generate + copy query engine to .next/server), db:\* scoped to @sassy/db
-- with-env pattern (dotenv-cli) in packages needing env: loads ../../.env before running commands
-- bun used for some scripts (e.g., social verification, stripe utilities)
+### Schemas Snapshot
 
-TypeScript & Module Resolution
+**User Object:**
+```typescript
+{
+  id: string;
+  name: string;
+  age: number;
+  profession: string;
+  profilePhoto: string;
+  interests: string[];
+  locationCity: string;
+  bio?: string;
+  activityPhotos?: string[];
+  pastEvents?: Array<{ title: string; type: string; attendees: number }>;
+}
+```
 
-- Shared TS configs: tooling/typescript/base.json and internal-package.json
-- Next alias: `~/*` → `apps/nextjs/src/*`
-- Packages use export maps to source (JIT):
-  - @sassy/api: "." → src/index.ts
-  - @sassy/db: "." → src/index.ts; subpaths for generated/\* and schema-validators
-  - @sassy/ui: subpaths `./ui/*`, `./components/*`, `./hooks/*`, `./utils`, `./schema-validators`, `./theme`
-- Next `transpilePackages`: `@sassy/api`, `@sassy/db`, `@sassy/ui`, `@sassy/validators`
+**ActivityPost Object:**
+```typescript
+{
+  id: string;
+  hostUserId: string;
+  activityType: 'workdate' | 'studydate' | 'hangout' | 'sports' | 'event' | 'other';
+  dateTime: Date;
+  description: string;
+  maxParticipants: number;
+  locationHiddenAddress: string;
+  locationHint: string;
+  participationCount: number;
+  meetupNotes?: string;
+  activityPhoto?: string;
+  coverPhoto: string;
+  activityPhotos: string[];
+  participants: string[];
+}
+```
 
-API & Backend
+**Conversation Object:**
+```typescript
+{
+  id: string;
+  participantId: string;
+  lastMessage: string;
+  lastMessageTime: Date;
+  unreadCount: number;
+  messages: Message[];
+}
+```
 
-- tRPC server (`packages/api/src/trpc.ts`):
-  - Context: { db, headers, user? }
-  - Auth middleware supports Next.js (currentUser) and chrome-extension (Authorization Bearer token via Clerk backend/verifyToken)
-  - `publicProcedure` and `protectedProcedure` exported
-- Routers (`packages/api/src/router`): editor, user, social, stripe consolidated in root.ts as `appRouter`
-- Next client/server integration (`apps/nextjs/src/trpc/*`):
-  - react.tsx: TRPCProvider, batch streaming link, SuperJSON, client singleton
-  - server.tsx: create server ctx with headers, options proxy, `HydrateClient`, `prefetch`
+**Message Object:**
+```typescript
+{
+  id: string;
+  senderId: string;
+  content: string;
+  timestamp: Date;
+}
+```
 
-Database & Data Layer
+### Acceptance Criteria
 
-- Prisma schema in `packages/db/prisma/schema.prisma`; generators for node, edge, and zod validators
-- Datasource uses `DATABASE_URL` and `DIRECT_URL`; PostgreSQL extensions: uuid-ossp, vector
-- `@sassy/db/src/index.ts` re-exports generated client, Prisma, and db helpers
+See `.cursor/plans/duma-neobrutalism-rebuild_PLAN_26-11-25.md` Section 14 for detailed acceptance criteria per phase.
 
-Auth & Payments
+### Phases & Current Status
 
-- Clerk: `apps/nextjs/src/middleware.ts` protects non-public routes; `ClerkProvider` in layout
-- Payments: Stripe package and router exist but are not required for Gifavatr currently
+**Phase 1: Project Setup & Foundation** - ⏳ PLANNED
+- Initialize Next.js with App Router
+- Configure Tailwind CSS 4
+- Set up React Router v7 and React Query v5
+- Create neobrutalism design system
 
-UI & Styling
+**Phase 2: Core Components & Design System** - ⏳ PLANNED
+- Build all core components with neobrutalism styling
+- Implement animations
 
-- Tailwind v4 with shared config (`@sassy/tailwind-config`): `apps/nextjs/tailwind.config.ts` extends content with `../../packages/ui/src/**/*.{ts,tsx}`
-- Global CSS (`apps/nextjs/src/app/globals.css`): `@import "tailwindcss"` and `@config '../../tailwind.config.ts'`; defines gif-rise animations and CSS variable theme
-- shadcn/ui components in `@sassy/ui`; Theme and Toaster wired in app layout
+**Phase 3: Data Integration & Routing** - ⏳ PLANNED
+- Set up React Query hooks
+- Create mock API routes
+- Implement React Router v7 routing
 
-Environment Variables
+**Phase 4: Testing, Polish & Documentation** - ⏳ PLANNED
+- Test all features
+- Polish animations
+- Create README
 
-- Monorepo pattern: Packages use `with-env` (dotenv-cli) to load `../../.env`. Turbo `globalEnv` passes common keys.
-- Required for current product:
-  - Database: `DATABASE_URL`, `DIRECT_URL` (Prisma)
-  - Clerk: `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (client), `CLERK_SECRET_KEY` (server)
-  - Supabase: `SUPABASE_URL`, `SUPABASE_SECRET_KEY` (server); `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` or `NEXT_PUBLIC_SUPABASE_ANON_KEY` (client)
-  - Replicate: `REPLICATE_API_TOKEN`
-  - Apify: `APIFY_API_TOKEN`
-- Present but not required now: Stripe keys, Loops key
+---
 
-Linting & Formatting
+## Tech Stack Overview
 
-- ESLint presets under tooling/eslint with `restrictEnvAccess` to encourage using validated `env` imports
-- App ESLint composes base + react + nextjs presets
-- Prettier with Tailwind plugin and import sorting; tailwind config path references tooling `tailwind/web.ts`
+| Area | Technology | Version/Source |
+|------|-----------|----------------|
+| **Framework** | Next.js | 15+ (App Router) |
+| **Language** | TypeScript | Latest |
+| **Package Manager** | pnpm | Latest |
+| **Styling** | Tailwind CSS | 4.x |
+| **UI Components** | shadcn/ui | Latest |
+| **Routing** | React Router | v7 |
+| **Data Fetching** | React Query | v5 |
+| **Icons** | Lucide React | Latest |
+| **Animations** | Tailwind CSS + CSS | Custom keyframes |
 
-Conventions & Rules
+---
 
-- Service co-location in domain packages for reuse across API and scripts
-- TypeScript-only codebase with explicit types; subpath export maps for JIT
-- Tailwind v4 practices: `@import`, `@config`, CSS variables for colors; shared presets
-- Error handling: TRPCError for API; Zod validators generated from Prisma
+## Monorepo Layout
 
-Security Posture
+**Current Structure:**
+```
+riper-5-spec-driven-development/
+├── .cursor/                    # RIPER-5 system files
+│   ├── commands/              # Command templates
+│   ├── context/                # Context files
+│   ├── plans/                  # Feature plans
+│   └── rules/                  # Coding rules
+├── 0-sample-duma/             # Original Vite/React app (reference)
+│   ├── src/
+│   │   ├── components/        # React components
+│   │   ├── lib/               # Mock data and utils
+│   │   └── pages/             # Page components
+│   └── package.json
+└── README.md                   # System documentation
+```
 
-- Clerk middleware enforces auth for protected routes; public matcher enumerates safe paths
-- Secrets used server-side only via `with-env`; client receives only NEXT*PUBLIC*\* values
-- No sensitive data persisted client-side
+**Planned New Project Structure:**
+```
+duma-complex/                   # New Next.js app (to be created)
+├── app/                        # Next.js App Router
+│   ├── (main)/                # Main route group
+│   │   ├── layout.tsx         # Main layout
+│   │   ├── page.tsx           # Home/Discover
+│   │   ├── activities/        # My Activities
+│   │   ├── hosted/            # Hosted Activities
+│   │   ├── profile/           # Profile
+│   │   └── chat/              # Chat
+│   ├── api/                   # Mock API routes
+│   ├── components/            # React components
+│   ├── hooks/                 # React Query hooks
+│   ├── lib/                   # Utilities and mock data
+│   ├── layout.tsx             # Root layout
+│   └── globals.css            # Design system
+├── public/                    # Static assets
+└── package.json
+```
 
-Monitoring & Operations
+---
 
-- Vercel Analytics and Speed Insights enabled only in production
-- Prisma Next.js monorepo plugin used at build to ensure Prisma works with deployments
+## Package Manager & Scripts
 
-References & Key Files
+**Package Manager:** pnpm
 
-- Root: pnpm-workspace.yaml, turbo.json, package.json
-- App: `apps/nextjs/next.config.js`, `src/app/layout.tsx`, `src/app/globals.css`, `src/env.ts`, `src/middleware.ts`, `src/trpc/*`
-- API: `packages/api/src/trpc.ts`, `packages/api/src/router/*`, `packages/api/src/index.ts`
-- DB: `packages/db/prisma/schema.prisma`, `packages/db/src/index.ts`, `packages/db/generated/*`
-- Storage: `packages/supabase-bucket/src/index.ts`
-- Referral: `packages/social-referral/src/social-referral-service.ts`, `platforms/x-verifier.ts`, `platforms/threads-verifier.ts`, `utils/detect-platform.ts`, `schema-validators.ts`
-- Tooling: `tooling/eslint/*`, `tooling/prettier/index.js`, `tooling/tailwind/*`, `tooling/typescript/*`
-- Product reference: `.cursor/context/example-complex-prd.md` (structure/depth reference)
+**Planned Scripts (for new project):**
+```json
+{
+  "dev": "next dev",
+  "build": "next build",
+  "start": "next start",
+  "lint": "next lint",
+  "type-check": "tsc --noEmit"
+}
+```
 
-Open Questions
+**Installation:**
+```bash
+pnpm install
+```
 
-- Validate Facebook `/share/v/` flows with additional samples; monitor Apify actor stability across platforms
-- Timeline for cleaning legacy "EngageKit" branding in assets/metadata?
+---
 
-Appendices
+## TypeScript & Module Resolution
 
-A) tRPC Procedures by Router
+**TypeScript Config:**
+- Strict mode enabled
+- Path alias: `@/` → `./app/`
+- Next.js TypeScript preset
 
-- editor
-  - uploadStart(input: { dataUrl: string; mime: "image/png"|"image/jpeg"|"image/webp" }) → { path, url }
-  - removeBackground(input: { uploadPath: string }) → { path, url }
-  - generateGif(input: { bgRemovedPath: string; style: "rise-bottom"|"rise-left"|"rise-right"; bgColor: string }) → { path, url }
-  - listAssets() → { uploads, backgroundRemoved, results }
-- user
-  - checkAccess() → AccessType | undefined
-  - getDailyCommentCount() → number
-  - create(input: UserCreateInputSchema) → User
-  - update(input: { id: string; data: UserUpdateInputSchema }) → User
-  - delete(input: { id: string }) → User
-  - me() → User | null
-- social
-  - verifyKeywords(input: { platform?: "x"|"threads"|"facebook"|"linkedin"; url: string; keywords: string[] }) → { platform, url, text, containsAll, matchedKeywords, missingKeywords }
-    (Note: platform auto-detected from URL if not provided)
-- stripe (present; not required now)
-  - createCheckout(input: purchaseType) → checkoutUrl
-  - createCustomerPortal(input: { returnUrl? }) → { url }
-  - checkAccess() → { hasAccess, accessType }
+**Module Resolution:**
+- Path aliases configured in `tsconfig.json`
+- Import pattern: `import { Component } from '@/components/Component'`
 
-B) Package Scripts (selected)
+---
 
-- Root package.json: build (turbo), dev (turbo watch), postinstall (prisma generate + copy engine), lint/format/typecheck
-- apps/nextjs: dev/build/start with `with-env`, typecheck, lint, format
-- packages/api: typecheck, lint, social:verify (bun + with-env; unified script for X, Threads, Facebook, LinkedIn)
-- packages/db: db:generate/push/migrate/studio/zod with `with-env`
-- packages/stripe: stripe:prices / stripe:portal (bun + with-env)
-- packages/social-referral: with-env present
+## API & Backend
 
-C) Prisma Models (key fields)
+**Backend Type:** Mock API routes only (no real backend)
 
-- User(id, username?, primaryEmailAddress, accessType, dailyAIcomments, createdAt, updatedAt)
-- UserUpload(id, userId, path, mime, createdAt)
-- BackgroundRemoved(id, userId, sourceUploadId, path, createdAt)
-- UserResult(id, userId, path, createdAt)
+**API Routes (Planned):**
+- `duma-complex/app/api/activities/route.ts` - GET all activities
+- `duma-complex/app/api/users/route.ts` - GET all users, GET user by ID
+- `duma-complex/app/api/conversations/route.ts` - GET all conversations
+- `duma-complex/app/api/messages/route.ts` - GET messages by conversation ID
 
-D) TS Paths & Exports
+**Data Source:** Mock data from `duma-complex/app/lib/mockData.ts` (copied from sample project)
 
-- apps/nextjs tsconfig: `~/*` → `src/*`
-- Export maps: `@sassy/api` (index.ts); `@sassy/db` (index.ts, generated/\*, schema-validators); `@sassy/ui` (subpaths); `@sassy/validators` (index.ts)
-- Notice that we are all using Just In Time exports directly from the files, try to limit exporting from a barrel index.ts file at the root package because it doesn't give un context of the name of the file where the definition happend. You need to check package.json because JIT exports are defined in there
+---
+
+## Database & Data Layer
+
+**Database:** None (prototype uses mock data only)
+
+**Data Management:**
+- React Query v5 for client-side data fetching and caching
+- Mock data stored in `duma-complex/app/lib/mockData.ts`
+- No persistence (data resets on page refresh)
+
+---
+
+## Auth & Payments
+
+**Authentication:** None (prototype only, no real auth needed)
+
+**Payments:** None (not in scope)
+
+---
+
+## UI & Styling
+
+### Next.js Setup
+- **Version**: 15+ with App Router
+- **Routing**: File-based routing in `app/` directory
+- **Server Components**: Default (use Client Components only when needed)
+
+### Tailwind CSS 4
+- **Setup**: `@import "tailwindcss"` in `globals.css`
+- **Config**: `tailwind.config.ts` with custom neobrutalism theme
+- **CSS Variables**: Design tokens defined in `globals.css`
+
+### shadcn/ui
+- **Location**: `duma-complex/app/components/ui/`
+- **Styling**: Custom neobrutalism theme applied to all components
+- **Components**: Button, Card, Badge, Avatar, Drawer, Progress, ScrollArea, etc.
+
+### Design System: Neobrutalism + Gumroad
+
+**Color Palette (HSL):**
+- Primary: Bright, saturated colors (e.g., `240 100% 60%` - vibrant blue)
+- Background: Light, clean (`0 0% 98%` - off-white)
+- Foreground: Dark text (`0 0% 10%` - near-black)
+- Borders: Bold (`0 0% 20%` - dark gray)
+
+**Typography:**
+- Font: System font stack
+- Weights: Bold (600-700) for headings, medium (500) for body
+- Sizes: Generous (16px base)
+
+**Borders & Shadows:**
+- Border Width: 3-4px (thick, bold)
+- Border Radius: 12-16px (rounded, friendly)
+- Shadows: Offset shadows (`4px 4px 0px 0px`), no blur
+
+**Animations:**
+- Spring-like, 200-300ms duration
+- Swipe animations with rotation and opacity
+- Drawer open/close transitions
+
+---
+
+## Environment Variables
+
+**Prototype:** No environment variables needed (mock data only)
+
+**Future (Production):**
+- `DATABASE_URL` (if adding real backend)
+- `NEXT_PUBLIC_API_URL` (if adding real API)
+- Auth provider keys (if adding authentication)
+
+---
+
+## Linting & Formatting
+
+**Linting:**
+- ESLint with Next.js config
+- TypeScript strict mode
+
+**Formatting:**
+- Prettier (if configured)
+- Consistent code style
+
+---
+
+## Conventions & Rules
+
+### File Naming
+- **Files**: kebab-case (`activity-card.tsx`)
+- **Components**: PascalCase (`ActivityCard`)
+- **Hooks**: camelCase with `use` prefix (`useActivities`)
+
+### Code Style
+- **TypeScript**: Explicit types, no `any`
+- **Components**: Server Components by default, Client Components with `"use client"`
+- **Imports**: Use `@/` alias for app directory
+- **Styling**: Tailwind utility classes, CSS variables for design tokens
+
+### Design System Rules
+- **Colors**: Always use CSS variables (HSL format)
+- **Borders**: 3-4px thick, 12-16px radius
+- **Shadows**: Offset shadows, no blur
+- **Typography**: Bold weights for headings
+- **No Blur**: Avoid backdrop-blur, box-shadow blur
+
+### Architecture Patterns
+- **Server Components First**: Use unless interactivity needed
+- **Data Fetching**: React Query hooks in Client Components
+- **API Routes**: Mock routes in `duma-complex/app/api/` for React Query
+- **Layouts**: Shared UI in layout files
+
+---
+
+## Security Posture
+
+**Prototype-Level:**
+- No authentication required
+- No sensitive data handling
+- No API keys or secrets
+- No input validation (mock data only)
+- No CSRF protection needed
+
+**Future Considerations:**
+- Authentication via Clerk or similar
+- Input validation with Zod
+- Rate limiting on API routes
+- CORS configuration
+- Environment variable management
+
+---
+
+## Monitoring & Operations
+
+**Development:**
+- Next.js dev server on `localhost:3000`
+- React Query DevTools (optional, for development)
+- Browser DevTools for debugging
+
+**Production (Future):**
+- Vercel deployment (recommended for Next.js)
+- Error tracking (Sentry, if needed)
+- Analytics (if needed)
+
+---
+
+## References & Key Files
+
+### RIPER-5 System Files
+- `.cursor/commands/generate-plan.md` - Plan generation command
+- `.cursor/commands/generate-context.md` - Context generation command
+- `.cursor/rules/riper-5-mode.mdc` - RIPER-5 protocol
+- `.cursor/context/example-complex-prd.md` - Complex plan reference
+
+### Project Plans
+- `.cursor/plans/duma-neobrutalism-rebuild_PLAN_26-11-25.md` - Main project plan
+
+### Sample Project Reference
+- `0-sample-duma/` - Original Vite/React app
+- `0-sample-duma/src/lib/mockData.ts` - Mock data to copy
+- `0-sample-duma-context.md` - Sample project context
+
+### Design References
+- Neobrutalism design principles (bold, high contrast, thick borders)
+- Gumroad aesthetic (minimalist, rounded, friendly, modern)
+
+---
+
+## Open Questions
+
+1. **Project Location**: ✅ Resolved - New Next.js app will be created in `duma-complex/` directory
+2. **Deployment**: Future deployment target? (Vercel recommended for Next.js)
+3. **Testing**: Add unit tests? (Out of scope for prototype, but consider for future)
+
+---
+
+## Appendices
+
+### Mock Data Structure
+
+**Source:** `0-sample-duma/src/lib/mockData.ts`
+
+**Contents:**
+- 30+ users with profiles, photos, interests, past events
+- 55+ activities across types: workdate, studydate, hangout, sports, event
+- Conversations and messages for chat feature
+- Current user (Marc - indie hacker style)
+
+**Data Types:**
+- `User` - User profile information
+- `ActivityPost` - Activity details
+- `Conversation` - Chat conversations
+- `Message` - Chat messages
+- `JoinRequest` - Activity join requests (not used in prototype)
+
+### Component Inventory (Planned)
+
+**Core Components:**
+- `SwipeFeed` - Main swipe interface
+- `ActivityCard` - Activity card display
+- `ActivityDetailDrawer` - Activity details drawer
+- `UserProfileDrawer` - User profile drawer
+- `BottomNav` - Bottom navigation
+- `MyActivities` - My activities tab
+- `HostedActivities` - Hosted activities tab
+- `Profile` - Profile tab
+- `Chat` - Chat tab
+
+**UI Components (shadcn/ui):**
+- Button, Card, Badge, Avatar, Drawer, Progress, ScrollArea, Separator, Input, Toast, etc.
+
+---
+
+**End of Context**
+
